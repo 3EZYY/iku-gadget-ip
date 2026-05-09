@@ -27,7 +27,13 @@ interface SellerStat {
 }
 
 interface IncentivePanelProps {
-  data: any[];
+  data: {
+    tanggal: string;
+    nama_seller: string;
+    harga_jual: number | string;
+    harga_beli: number | string;
+    biaya_operasional: number | string;
+  }[];
   isAdmin: boolean;
 }
 

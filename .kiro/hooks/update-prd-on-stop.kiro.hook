@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Update PRD & Technical Summary on Agent Stop",
+  "description": "After every agent session that makes code changes, reminds the agent to update prd_iku_gadget_terbaru V1.md and TECHNICAL_SUMMARY_My Project.md with the latest implementation status, changelog entry, and milestone progress.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review what was implemented in this session. If any code files were created or modified, update the following documentation files to reflect the current state:\n\n1. `prd_iku_gadget_terbaru V1.md`:\n   - Update \"Last Updated\" date to today\n   - Change ⏳ to ✅ for any requirements that are now complete\n   - Change ⏳ to 🔄 for requirements that are partially done\n   - Update Milestone statuses in Section 13\n   - Add a new row to the Changelog table (Section 15) with today's date, a version bump, a summary of changes, and the affected files\n\n2. `TECHNICAL_SUMMARY_My Project.md`:\n   - Update the \"State Saat Ini\" checklist\n   - Add a new entry to the \"Kronologi Perubahan\" list if a significant feature was added\n\nOnly make changes if actual implementation work was done in this session. If this was a documentation-only or Q&A session, skip the update."
+  }
+}

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -39,6 +40,23 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        // ── Custom design tokens ──────────────────────────────
+        "chart-unit": {
+          DEFAULT: "hsl(var(--chart-unit))",
+        },
+        "brand-secondary": {
+          DEFAULT: "hsl(var(--brand-secondary))",
+        },
+        "accent-orange": {
+          DEFAULT: "hsl(var(--accent-orange))",
+        },
+        "accent-red": {
+          DEFAULT: "hsl(var(--accent-red))",
+        },
+        // ── Surface layers (dark futuristic) ──────────────────
+        "bg-surface": "hsl(222 40% 10%)",
+        "bg-elevated": "hsl(222 35% 14%)",
+        // ─────────────────────────────────────────────────────
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -57,6 +75,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "Courier New", "monospace"],
+        display: ["Sora", "Inter", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -87,5 +110,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

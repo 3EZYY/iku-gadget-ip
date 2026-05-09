@@ -71,8 +71,8 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
       }
       onSuccess();
       onOpenChange?.(false);
-    } catch (err: any) {
-      toast.error(err.message || "Gagal menyimpan data");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Gagal menyimpan data");
     } finally {
       setLoading(false);
     }

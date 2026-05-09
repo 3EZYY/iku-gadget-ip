@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          email: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string | null
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string | null
+          email?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       incentive_config: {
         Row: {
           bonus_percentage: number
@@ -125,11 +149,83 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          id: string
+          nama: string
+          merk: string
+          model: string
+          kondisi: "Baik" | "Cukup" | "Rusak Ringan"
+          penyimpanan: string | null
+          ram: string | null
+          harga_jual: number
+          harga_beli: number
+          stok: number
+          foto_url: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          nama: string
+          merk: string
+          model: string
+          kondisi: "Baik" | "Cukup" | "Rusak Ringan"
+          penyimpanan?: string | null
+          ram?: string | null
+          harga_jual: number
+          harga_beli: number
+          stok?: number
+          foto_url?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nama?: string
+          merk?: string
+          model?: string
+          kondisi?: "Baik" | "Cukup" | "Rusak Ringan"
+          penyimpanan?: string | null
+          ram?: string | null
+          harga_jual?: number
+          harga_beli?: number
+          stok?: number
+          foto_url?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_list: {
+        Args: Record<string, never>
+        Returns: {
+          user_id: string
+          email: string
+          full_name: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          created_at: string
+        }[]
+      }
+      assign_role_to_user: {
+        Args: {
+          _target_user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: void
+      }
+      remove_user_role: {
+        Args: { _target_user_id: string }
+        Returns: void
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -139,7 +235,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "seller"
+      app_role: "owner" | "admin" | "karyawan"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -267,7 +363,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "seller"],
+      app_role: ["owner", "admin", "karyawan"],
     },
   },
 } as const

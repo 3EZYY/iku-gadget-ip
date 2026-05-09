@@ -5,16 +5,16 @@ import { useRole } from "./useRole";
 
 export function useSellerVisitLogger() {
   const { user } = useAuth();
-  const { isSeller } = useRole();
+  const { isKaryawan } = useRole();
   const logged = useRef(false);
 
   useEffect(() => {
-    if (!user || !isSeller || logged.current) return;
+    if (!user || !isKaryawan || logged.current) return;
     logged.current = true;
 
     supabase.from("seller_visits").insert({
       seller_user_id: user.id,
       seller_email: user.email || "unknown",
     });
-  }, [user, isSeller]);
+  }, [user, isKaryawan]);
 }
