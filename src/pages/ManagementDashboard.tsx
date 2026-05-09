@@ -23,6 +23,7 @@ import OwnerPeriodStats from "@/components/owner/OwnerPeriodStats";
 import SellerLeaderboard from "@/components/owner/SellerLeaderboard";
 import SellerProfitChart from "@/components/owner/SellerProfitChart";
 import MonthlyTrendChart from "@/components/owner/MonthlyTrendChart";
+import DarkModeToggle from "@/components/karyawan/DarkModeToggle";
 import {
   LogOut, TrendingUp, ShoppingBag, DollarSign,
   Wallet, Crown, Shield, Users, Settings, Package, BarChart3,
@@ -128,6 +129,7 @@ export default function ManagementDashboard() {
           </div>
           <div className="flex items-center gap-1">
             <NotificationBell />
+            <DarkModeToggle />
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" /> Keluar
             </Button>

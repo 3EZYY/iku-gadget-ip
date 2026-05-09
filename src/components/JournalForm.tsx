@@ -11,6 +11,19 @@ import { useAuth } from "@/hooks/useAuth";
 
 const JENIS_UNIT_OPTIONS = ["HP", "Laptop", "Tablet", "Aksesoris", "Smartwatch", "Lainnya"];
 
+// ─── Currency input helpers ───────────────────────────────────
+/** Strip non-digits and format with thousand separators */
+function formatThousands(raw: string): string {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return "";
+  return Number(digits).toLocaleString("id-ID");
+}
+
+/** Parse formatted string back to plain number string for state */
+function parseFormatted(formatted: string): string {
+  return formatted.replace(/\./g, "").replace(/,/g, "");
+}
+
 interface JournalFormProps {
   onSuccess: () => void;
   editData?: {
@@ -36,9 +49,9 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
     nama_seller: editData?.nama_seller || "",
     jenis_unit: editData?.jenis_unit || "HP",
     nama_unit: editData?.nama_unit || "",
-    harga_jual: editData?.harga_jual?.toString() || "",
-    harga_beli: editData?.harga_beli?.toString() || "",
-    biaya_operasional: editData?.biaya_operasional?.toString() || "0",
+    harga_jual: editData?.harga_jual ? Number(editData.harga_jual).toLocaleString("id-ID") : "",
+    harga_beli: editData?.harga_beli ? Number(editData.harga_beli).toLocaleString("id-ID") : "",
+    biaya_operasional: editData?.biaya_operasional ? Number(editData.biaya_operasional).toLocaleString("id-ID") : "0",
     keterangan_biaya: editData?.keterangan_biaya || "",
   });
 
@@ -53,9 +66,9 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
       nama_seller: form.nama_seller,
       jenis_unit: form.jenis_unit,
       nama_unit: form.nama_unit,
-      harga_jual: Number(form.harga_jual),
-      harga_beli: Number(form.harga_beli),
-      biaya_operasional: Number(form.biaya_operasional),
+      harga_jual: Number(parseFormatted(form.harga_jual)),
+      harga_beli: Number(parseFormatted(form.harga_beli)),
+      biaya_operasional: Number(parseFormatted(form.biaya_operasional)),
       keterangan_biaya: form.keterangan_biaya || null,
     };
 
@@ -78,7 +91,7 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
     }
   };
 
-  const profit = Number(form.harga_jual) - Number(form.harga_beli) - Number(form.biaya_operasional);
+  const profit = Number(parseFormatted(form.harga_jual)) - Number(parseFormatted(form.harga_beli)) - Number(parseFormatted(form.biaya_operasional));
   const profitSeller = profit / 2;
   const profitToko = profit / 2;
 
@@ -114,15 +127,47 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label>Harga Jual</Label>
-          <Input type="number" value={form.harga_jual} onChange={(e) => setForm({ ...form, harga_jual: e.target.value })} placeholder="0" required />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={form.harga_jual}
+              onChange={(e) => setForm({ ...form, harga_jual: formatThousands(e.target.value) })}
+              placeholder="0"
+              className="pl-8 font-mono"
+              required
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label>Harga Beli</Label>
-          <Input type="number" value={form.harga_beli} onChange={(e) => setForm({ ...form, harga_beli: e.target.value })} placeholder="0" required />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={form.harga_beli}
+              onChange={(e) => setForm({ ...form, harga_beli: formatThousands(e.target.value) })}
+              placeholder="0"
+              className="pl-8 font-mono"
+              required
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label>Biaya Operasional</Label>
-          <Input type="number" value={form.biaya_operasional} onChange={(e) => setForm({ ...form, biaya_operasional: e.target.value })} placeholder="0" />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
+            <Input
+              type="text"
+              inputMode="numeric"
+              value={form.biaya_operasional}
+              onChange={(e) => setForm({ ...form, biaya_operasional: formatThousands(e.target.value) })}
+              placeholder="0"
+              className="pl-8 font-mono"
+            />
+          </div>
         </div>
       </div>
       <div className="space-y-2">
