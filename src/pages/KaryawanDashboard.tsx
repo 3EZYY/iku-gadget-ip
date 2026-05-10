@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSellerVisitLogger } from "@/hooks/useSellerVisitLogger";
 import { signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { LogOut, ShoppingCart, Store, BarChart3, Sparkles, Smartphone } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -20,6 +19,7 @@ import ImeiChecker from "@/components/karyawan/ImeiChecker";
 import OnlineStore from "@/components/karyawan/OnlineStore";
 import DarkModeToggle from "@/components/karyawan/DarkModeToggle";
 import TargetProgress from "@/components/karyawan/TargetProgress";
+import JournalForm from "@/components/JournalForm";
 
 // ─── Types ────────────────────────────────────────────────────
 interface JournalEntry {
@@ -76,23 +76,8 @@ export default function KaryawanDashboard() {
     enabled: !!user,
   });
 
-  // ── Add transaction mutation ──────────────────────────────────
-  const addEntry = useMutation({
-    mutationFn: async (payload: Omit<JournalEntry, "id" | "user_id">) => {
-      const { error } = await supabase.from("journal").insert({
-        ...payload,
-        user_id: user!.id,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["journal", "karyawan", user?.id] });
-      toast.success("Transaksi berhasil dicatat!");
-    },
-    onError: (err: Error) => {
-      toast.error(err.message || "Gagal menyimpan data");
-    },
-  });
+  // ── Refresh helper ───────────────────────────────────────────
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["journal", "karyawan", user?.id] });
 
   // ── Stats ─────────────────────────────────────────────────────
   const totalProfit = entries.reduce(
@@ -205,6 +190,10 @@ export default function KaryawanDashboard() {
 
           {/* ── Tab: Transaksi ─────────────────────────────────────── */}
           <TabsContent value="transaksi" className="space-y-4 mt-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold">Riwayat Transaksi</h2>
+              <JournalForm onSuccess={refresh} />
+            </div>
             <TransactionTable
               transactions={entries.map(toTransaction)}
               isAdmin={false}
