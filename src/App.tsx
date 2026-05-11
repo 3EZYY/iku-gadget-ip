@@ -10,6 +10,7 @@ import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 import ManagementDashboard from "./pages/ManagementDashboard";
 import KaryawanDashboard from "./pages/KaryawanDashboard";
+import PendingApproval from "./pages/PendingApproval";
 import { useAuth } from "./hooks/useAuth";
 import { useRole } from "./hooks/useRole";
 
@@ -27,7 +28,7 @@ function RoleGuard({
   allowed: Array<"owner" | "admin" | "karyawan">;
 }) {
   const { user, loading: authLoading } = useAuth();
-  const { role, loading: roleLoading } = useRole();
+  const { role, isApproved, loading: roleLoading } = useRole();
 
   if (authLoading || roleLoading) {
     return (
@@ -38,6 +39,10 @@ function RoleGuard({
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // Authenticated but not yet approved → show pending screen
+  if (isApproved === false) return <PendingApproval />;
+
   if (!role || !allowed.includes(role)) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;

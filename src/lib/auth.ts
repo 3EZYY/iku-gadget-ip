@@ -8,9 +8,28 @@ export async function signIn(email: string, password: string) {
 }
 
 /**
- * Public self-registration — always assigns 'karyawan'.
- * The DB trigger handle_new_user() will read the metadata and insert
- * the correct row into profiles + user_roles automatically.
+ * Google OAuth sign-in.
+ * Redirects to /dashboard after successful auth.
+ * New Google users will have is_approved = false until Owner/Admin approves.
+ */
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Public self-registration — always assigns 'karyawan', is_approved = false.
+ * The DB trigger handle_new_user() reads metadata and inserts profiles + user_roles.
  */
 export async function signUp(email: string, password: string, fullName?: string) {
   const { data, error } = await supabase.auth.signUp({
@@ -20,7 +39,8 @@ export async function signUp(email: string, password: string, fullName?: string)
       emailRedirectTo: window.location.origin,
       data: {
         full_name: fullName ?? email,
-        role: "karyawan", // default for public registration
+        role: "karyawan",
+        // No created_by_admin flag → trigger sets is_approved = false
       },
     },
   });
@@ -30,15 +50,7 @@ export async function signUp(email: string, password: string, fullName?: string)
 
 /**
  * Admin/Owner creates a new account with an explicit role.
- * Uses the Supabase Admin API via a Postgres RPC so no service-key
- * is exposed to the browser. The RPC assign_role_to_user() enforces
- * permission rules server-side.
- *
- * Flow:
- *  1. Call supabase.auth.signUp() — creates auth.users row
- *  2. DB trigger handle_new_user() inserts profile + default role
- *  3. Call assign_role_to_user() RPC to set the intended role
- *     (overwrites the default 'karyawan' if needed)
+ * Sets created_by_admin = true in metadata → trigger sets is_approved = true.
  */
 export async function createUserWithRole(
   email: string,
@@ -46,20 +58,19 @@ export async function createUserWithRole(
   role: AppRole,
   fullName?: string
 ) {
-  // Step 1: create the auth user (trigger fires, inserts karyawan by default)
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         full_name: fullName ?? email,
-        role, // trigger reads this and assigns correct role directly
+        role,
+        created_by_admin: "true", // trigger reads this → is_approved = true
       },
     },
   });
   if (error) throw error;
   if (!data.user) throw new Error("Gagal membuat akun");
-
   return data.user;
 }
 

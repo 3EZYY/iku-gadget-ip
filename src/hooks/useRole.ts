@@ -9,15 +9,16 @@ const RETRY_DELAY_MS = 600;
 
 export function useRole() {
   const { user, loading: authLoading } = useAuth();
-  const [role, setRole]       = useState<AppRole | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [role, setRole]           = useState<AppRole | null>(null);
+  const [isApproved, setIsApproved] = useState<boolean | null>(null);
+  const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
-    // Wait until auth is resolved before doing anything
     if (authLoading) return;
 
     if (!user) {
       setRole(null);
+      setIsApproved(null);
       setLoading(false);
       return;
     }
@@ -26,34 +27,44 @@ export function useRole() {
 
     const fetchRole = async (attempt = 1) => {
       try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        // Fetch role and approval status in parallel
+        const [roleRes, profileRes] = await Promise.all([
+          supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          supabase
+            .from("profiles")
+            .select("is_approved")
+            .eq("id", user.id)
+            .maybeSingle(),
+        ]);
 
         if (cancelled) return;
 
-        if (error) {
-          console.error(`[useRole] attempt ${attempt} error:`, error.message);
+        if (roleRes.error) {
+          console.error(`[useRole] attempt ${attempt} error:`, roleRes.error.message);
           if (attempt < MAX_ATTEMPTS) {
             setTimeout(() => fetchRole(attempt + 1), RETRY_DELAY_MS * attempt);
             return;
           }
           setRole(null);
+          setIsApproved(null);
           setLoading(false);
           return;
         }
 
-        // data is null → row not found yet (trigger may still be running)
-        // retry a few times before giving up
-        if (data === null && attempt < MAX_ATTEMPTS) {
+        // Retry if role row not yet created by trigger
+        if (roleRes.data === null && attempt < MAX_ATTEMPTS) {
           console.warn(`[useRole] no role found yet, retrying (${attempt}/${MAX_ATTEMPTS})...`);
           setTimeout(() => fetchRole(attempt + 1), RETRY_DELAY_MS * attempt);
           return;
         }
 
-        setRole((data?.role as AppRole) ?? null);
+        setRole((roleRes.data?.role as AppRole) ?? null);
+        // If profile row doesn't exist yet, treat as not approved
+        setIsApproved(profileRes.data?.is_approved ?? false);
         setLoading(false);
       } catch (err) {
         if (cancelled) return;
@@ -63,6 +74,7 @@ export function useRole() {
           return;
         }
         setRole(null);
+        setIsApproved(null);
         setLoading(false);
       }
     };
@@ -76,11 +88,12 @@ export function useRole() {
 
   return {
     role,
-    isOwner:   role === "owner",
-    isAdmin:   role === "admin",
+    isApproved,
+    isOwner:    role === "owner",
+    isAdmin:    role === "admin",
     isKaryawan: role === "karyawan",
     /** @deprecated use isKaryawan */
-    isSeller:  role === "karyawan",
+    isSeller:   role === "karyawan",
     loading,
   };
 }
