@@ -274,18 +274,16 @@ function HowItWorksSection() {
         </div>
 
         <div className="relative flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-0">
-          {STEPS.map(({ num, title, desc }, idx) => (
-            <div key={num} className="flex-1 flex flex-col lg:items-center lg:text-center relative">
-              {/* Connector line (desktop only) */}
-              {idx < STEPS.length - 1 && (
-                <div
-                  aria-hidden="true"
-                  className="hidden lg:block absolute top-6 left-[calc(50%+2.5rem)] right-0 h-px bg-gradient-to-r from-primary/50 to-border"
-                />
-              )}
+          {/* Single connecting line behind all steps — desktop only */}
+          <div
+            aria-hidden="true"
+            className="hidden lg:block absolute top-6 left-[16%] right-[16%] h-px bg-gradient-to-r from-primary/30 via-border to-primary/30 -z-0"
+          />
 
-              {/* Step number */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 glow-primary-sm bg-primary/15 border border-primary/40 text-primary">
+          {STEPS.map(({ num, title, desc }) => (
+            <div key={num} className="flex-1 flex flex-col lg:items-center lg:text-center relative z-10">
+              {/* Step number — solid bg to mask the line behind */}
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 glow-primary-sm bg-background border border-primary/40 text-primary">
                 {num}
               </div>
 
@@ -308,6 +306,7 @@ function HowItWorksSection() {
 // ─── Section 5: Testimoni (Dynamic from DB) ──────────────────
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import TestimonialForm from "@/components/landing/TestimonialForm";
 
 interface DbTestimonial {
@@ -349,15 +348,14 @@ function TestimonialsSection() {
   return (
     <section id="testimoni" className="py-20 bg-card">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
-          <div className="text-center sm:text-left">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
-              Kata Pelanggan Kami
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Kepercayaan pelanggan adalah prioritas utama kami.
-            </p>
-          </div>
+        {/* Header — centered */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+            Kata Pelanggan Kami
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mb-5">
+            Kepercayaan pelanggan adalah prioritas utama kami.
+          </p>
           <TestimonialForm />
         </div>
 
@@ -382,14 +380,25 @@ function TestimonialsSection() {
                 key={t.id}
                 className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
               >
-                {/* Photo if available */}
+                {/* Photo with lightbox */}
                 {t.foto_url && (
-                  <img
-                    src={t.foto_url}
-                    alt={`Transaksi ${t.nama}`}
-                    className="w-full h-32 object-cover rounded-lg mb-3"
-                    loading="lazy"
-                  />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <img
+                        src={t.foto_url}
+                        alt={`Transaksi ${t.nama}`}
+                        className="w-full h-32 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+                        loading="lazy"
+                      />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl p-2 bg-card/95 backdrop-blur-sm">
+                      <img
+                        src={t.foto_url}
+                        alt={`Transaksi ${t.nama}`}
+                        className="w-full max-h-[80vh] object-contain rounded-lg"
+                      />
+                    </DialogContent>
+                  </Dialog>
                 )}
 
                 {/* Stars */}
