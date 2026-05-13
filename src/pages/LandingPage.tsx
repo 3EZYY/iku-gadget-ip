@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import LandingDarkModeToggle from "@/components/landing/DarkModeToggle";
+import { supabase } from "@/integrations/supabase/client";
 
 // ─── Constants ────────────────────────────────────────────────
 const WA_NUMBER = "6281234567890"; // nomor utama (hero CTA)
@@ -304,74 +305,141 @@ function HowItWorksSection() {
   );
 }
 
-// ─── Section 5: Testimoni ─────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    name: "Rizky A.",
-    avatar: "RA",
-    rating: 5,
-    text: "Prosesnya cepat banget, cuma 20 menit dari datang sampai uang di tangan. Harganya juga fair, tidak jauh dari ekspektasi saya.",
-  },
-  {
-    name: "Siti M.",
-    avatar: "SM",
-    rating: 5,
-    text: "Beli HP bekas di sini dan sudah 3 bulan masih mulus. Garansi fungsinya beneran dipenuhi, bukan cuma janji.",
-  },
-  {
-    name: "Budi S.",
-    avatar: "BS",
-    rating: 5,
-    text: "Sudah 2 kali jual HP di sini. Pelayanannya ramah, tidak ada tekanan, dan harganya selalu kompetitif.",
-  },
+// ─── Section 5: Testimoni (Dynamic from DB) ──────────────────
+import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+import TestimonialForm from "@/components/landing/TestimonialForm";
+
+interface DbTestimonial {
+  id: string;
+  nama: string;
+  rating: number;
+  ulasan: string;
+  foto_url: string | null;
+  created_at: string;
+}
+
+// Static fallback (shown if DB has no approved testimonials yet)
+const FALLBACK_TESTIMONIALS = [
+  { name: "Rizky A.", avatar: "RA", rating: 5, text: "Prosesnya cepat banget, cuma 20 menit dari datang sampai uang di tangan. Harganya juga fair, tidak jauh dari ekspektasi saya." },
+  { name: "Siti M.", avatar: "SM", rating: 5, text: "Beli HP bekas di sini dan sudah 3 bulan masih mulus. Garansi fungsinya beneran dipenuhi, bukan cuma janji." },
+  { name: "Budi S.", avatar: "BS", rating: 5, text: "Sudah 2 kali jual HP di sini. Pelayanannya ramah, tidak ada tekanan, dan harganya selalu kompetitif." },
 ] as const;
 
 function TestimonialsSection() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: dbTestimonials, isLoading } = useQuery<DbTestimonial[]>({
+    queryKey: ["testimonials-public"],
+    queryFn: async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
+        .from("testimonials")
+        .select("id, nama, rating, ulasan, foto_url, created_at")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(6);
+      if (error) return [];
+      return data ?? [];
+    },
+    staleTime: 60_000, // 1 min cache
+  });
+
+  const hasDbData = (dbTestimonials?.length ?? 0) > 0;
+
   return (
     <section id="testimoni" className="py-20 bg-card">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
-            Kata Pelanggan Kami
-          </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Kepercayaan pelanggan adalah prioritas utama kami.
-          </p>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-12">
+          <div className="text-center sm:text-left">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+              Kata Pelanggan Kami
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Kepercayaan pelanggan adalah prioritas utama kami.
+            </p>
+          </div>
+          <TestimonialForm />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {TESTIMONIALS.map(({ name, avatar, rating, text }) => (
-            <div
-              key={name}
-              className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
-            >
-              {/* Stars */}
-              <div className="flex gap-0.5 mb-3">
-                {Array.from({ length: rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-3.5 w-3.5 fill-current text-accent-orange"
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl p-5 bg-secondary border border-border space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Dynamic testimonials from DB */}
+        {!isLoading && hasDbData && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {dbTestimonials!.map((t) => (
+              <div
+                key={t.id}
+                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
+              >
+                {/* Photo if available */}
+                {t.foto_url && (
+                  <img
+                    src={t.foto_url}
+                    alt={`Transaksi ${t.nama}`}
+                    className="w-full h-32 object-cover rounded-lg mb-3"
+                    loading="lazy"
                   />
-                ))}
-              </div>
+                )}
 
-              {/* Text */}
-              <p className="text-sm leading-relaxed mb-4 text-muted-foreground">
-                "{text}"
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/20 text-primary">
-                  {avatar}
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-current text-accent-orange" />
+                  ))}
                 </div>
-                <span className="text-sm font-medium text-foreground">
-                  {name}
-                </span>
+
+                {/* Text — rendered as plain text, no dangerouslySetInnerHTML */}
+                <p className="text-sm leading-relaxed mb-4 text-muted-foreground">
+                  "{t.ulasan}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/20 text-primary">
+                    {t.nama.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{t.nama}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {/* Static fallback when DB is empty */}
+        {!isLoading && !hasDbData && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {FALLBACK_TESTIMONIALS.map(({ name, avatar, rating, text }) => (
+              <div
+                key={name}
+                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
+              >
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: rating }).map((_, i) => (
+                    <Star key={i} className="h-3.5 w-3.5 fill-current text-accent-orange" />
+                  ))}
+                </div>
+                <p className="text-sm leading-relaxed mb-4 text-muted-foreground">"{text}"</p>
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/20 text-primary">
+                    {avatar}
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

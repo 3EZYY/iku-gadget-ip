@@ -19,6 +19,7 @@ import MotivationalQuote from "@/components/MotivationalQuote";
 import IncentivePanel from "@/components/IncentivePanel";
 import UserManagement from "@/components/UserManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
+import TestimonialModeration from "@/components/admin/TestimonialModeration";
 import OwnerPeriodStats from "@/components/owner/OwnerPeriodStats";
 import SellerLeaderboard from "@/components/owner/SellerLeaderboard";
 import SellerProfitChart from "@/components/owner/SellerProfitChart";
@@ -26,7 +27,7 @@ import MonthlyTrendChart from "@/components/owner/MonthlyTrendChart";
 import DarkModeToggle from "@/components/karyawan/DarkModeToggle";
 import {
   LogOut, TrendingUp, ShoppingBag, DollarSign,
-  Wallet, Crown, Shield, Users, Settings, Package, BarChart3,
+  Wallet, Crown, Shield, Users, Settings, Package, BarChart3, MessageSquare,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -237,6 +238,10 @@ export default function ManagementDashboard() {
               <Settings className="mr-2 h-4 w-4" />
               Kelola Pengguna
             </TabsTrigger>
+            <TabsTrigger value="testimonials">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Moderasi Ulasan
+            </TabsTrigger>
           </TabsList>
 
           {/* ── Tab: Transactions ─────────────────────────────── */}
@@ -306,6 +311,11 @@ export default function ManagementDashboard() {
             <h2 className="text-xl font-bold">Kelola Pengguna</h2>
             {/* Owner can create admin+karyawan, admin can only create karyawan */}
             <UserManagement callerRole={isOwner ? "owner" : "admin"} />
+          </TabsContent>
+
+          {/* ── Tab: Testimonial Moderation ────────────────────── */}
+          <TabsContent value="testimonials" className="space-y-4">
+            <TestimonialModeration />
           </TabsContent>
         </Tabs>
       </main>
