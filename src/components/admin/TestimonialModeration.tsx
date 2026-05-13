@@ -137,7 +137,7 @@ function ApproveDialog({
               ) : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <Upload className="h-6 w-6" />
-                  <p className="text-xs">Klik untuk upload foto (maks 5MB)</p>
+                  <p className="text-xs">Klik untuk upload foto (maks 2MB)</p>
                 </div>
               )}
             </div>
