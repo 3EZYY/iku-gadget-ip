@@ -21,9 +21,7 @@ import {
   MessageCircle,
   ChevronRight,
   MapPin,
-  Phone,
   Star,
-  ArrowRight,
   Smartphone,
   TrendingUp,
   Users,
@@ -32,11 +30,21 @@ import logo from "@/assets/logo.png";
 import LandingDarkModeToggle from "@/components/landing/DarkModeToggle";
 
 // ─── Constants ────────────────────────────────────────────────
-const WA_NUMBER = "6281234567890"; // Ganti dengan nomor WhatsApp toko
+const WA_NUMBER = "6281234567890"; // nomor utama (hero CTA)
 const WA_LINK   = `https://wa.me/${WA_NUMBER}?text=Halo%20Iku%20Gadget%2C%20saya%20ingin%20tanya%20tentang%20HP%20bekas`;
 
 const STORE_ADDRESS = "Jl. Contoh No. 123, Kota Anda";
 const STORE_HOURS   = "Senin–Sabtu: 09.00–18.00 WIB";
+
+// ─── Contact Persons ──────────────────────────────────────────
+const WA_TEXT = encodeURIComponent("Halo, saya ingin tanya tentang HP bekas di Iku Gadget");
+
+const CONTACTS = [
+  { name: "Anang",  number: "628817053043" },
+  { name: "Lingga", number: "6282142119783" },
+  { name: "Epo",    number: "6282245070900" },
+  { name: "Arya",   number: "62882010490576" },
+] as const;
 
 // ─── Section 1: Hero ──────────────────────────────────────────
 function HeroSection() {
@@ -379,30 +387,39 @@ function CtaSection() {
             Siap Transaksi Sekarang?
           </h2>
           <p className="text-sm sm:text-base mb-8 text-muted-foreground">
-            Hubungi kami via WhatsApp atau langsung datang ke toko. Tim kami siap
-            membantu kamu mendapatkan harga terbaik.
+            Hubungi salah satu tim kami via WhatsApp atau langsung datang ke toko.
           </p>
 
-          <a
-            href={WA_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-8 py-3.5 text-sm font-semibold transition-all duration-200 hover:scale-105 glow-primary mb-6"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Chat WhatsApp Sekarang
-            <ArrowRight className="h-4 w-4" />
-          </a>
+          {/* Contact Person Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+            {CONTACTS.map(({ name, number }) => (
+              <a
+                key={name}
+                href={`https://wa.me/${number}?text=${WA_TEXT}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-secondary p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 hover:glow-primary-sm group"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-sm font-semibold text-foreground">{name}</span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  {`0${number.replace(/^62/, "")}`}
+                </span>
+              </a>
+            ))}
+          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5" />
-              {WA_NUMBER.replace("62", "0")}
-            </span>
-            <span className="hidden sm:block" aria-hidden="true">·</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground pt-4 border-t border-border">
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
               {STORE_HOURS}
+            </span>
+            <span className="hidden sm:block" aria-hidden="true">·</span>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              {STORE_ADDRESS}
             </span>
           </div>
         </div>
