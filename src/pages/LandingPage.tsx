@@ -29,13 +29,14 @@ import {
 import logo from "@/assets/logo.png";
 import LandingDarkModeToggle from "@/components/landing/DarkModeToggle";
 import { supabase } from "@/integrations/supabase/client";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 // ─── Constants ────────────────────────────────────────────────
 const WA_NUMBER = "6281234567890"; // nomor utama (hero CTA)
 const WA_LINK   = `https://wa.me/${WA_NUMBER}?text=Halo%20Iku%20Gadget%2C%20saya%20ingin%20tanya%20tentang%20HP%20bekas`;
 
-const STORE_ADDRESS = "Jl. Contoh No. 123, Kota Anda";
-const STORE_HOURS   = "Senin–Sabtu: 09.00–18.00 WIB";
+const STORE_ADDRESS = "Melayani COD area Malang & sekitarnya";
+const STORE_HOURS   = "Senin–Sabtu: 09.00–21.00 WIB";
 
 // ─── Contact Persons ──────────────────────────────────────────
 const WA_TEXT = encodeURIComponent("Halo, saya ingin tanya tentang HP bekas di Iku Gadget");
@@ -103,8 +104,8 @@ function HeroSection() {
 
         {/* Sub-headline */}
         <p className="animate-fade-up-delay-2 mx-auto max-w-xl text-base sm:text-lg mb-8 text-muted-foreground">
-          Iku Gadget & Stuff — toko jual beli HP bekas terpercaya dengan proses
-          cepat, harga transparan, dan garansi fungsi untuk setiap perangkat.
+          Iku Gadget & Stuff — jual beli HP bekas online terpercaya dengan proses
+          cepat via WhatsApp, harga transparan, dan garansi fungsi. COD area Surabaya.
         </p>
 
         {/* CTA Buttons */}
@@ -163,8 +164,8 @@ const FEATURES = [
   },
   {
     icon: Clock,
-    title: "Buka 6 Hari Seminggu",
-    desc: "Kami buka Senin–Sabtu pukul 09.00–18.00. Bisa juga janjian di luar jam operasional.",
+    title: "Fast Response 6 Hari",
+    desc: "Tim kami aktif Senin–Sabtu pukul 09.00–18.00. Chat kapan saja, kami balas cepat!",
     color: "hsl(160 70% 45%)",
   },
 ] as const;
@@ -245,18 +246,18 @@ function StatsSection() {
 const STEPS = [
   {
     num: "01",
-    title: "Datang ke Toko",
-    desc: "Bawa HP yang ingin dijual atau kunjungi toko kami untuk melihat koleksi HP bekas pilihan.",
+    title: "Hubungi via WhatsApp",
+    desc: "Kirim foto dan detail HP lamamu, atau tanyakan stok HP bekas yang tersedia. Tim kami fast response!",
   },
   {
     num: "02",
-    title: "Cek & Negosiasi Harga",
-    desc: "Tim kami akan mengecek kondisi HP secara menyeluruh dan memberikan penawaran harga terbaik.",
+    title: "Negosiasi Online",
+    desc: "Dapatkan estimasi harga terbaik langsung dari chat. Transparan, tanpa biaya tersembunyi.",
   },
   {
     num: "03",
-    title: "Transaksi Selesai",
-    desc: "Setuju dengan harga? Transaksi langsung selesai. Pembayaran tunai atau transfer bank.",
+    title: "Ketemuan (COD) & Transaksi",
+    desc: "Cek kondisi fisik secara langsung di lokasi yang disepakati, lalu bayar di tempat. Aman dan nyaman.",
   },
 ] as const;
 
@@ -456,15 +457,16 @@ function TestimonialsSection() {
 
 // ─── Section 6: CTA Penutup ───────────────────────────────────
 function CtaSection() {
+  const ref = useScrollReveal<HTMLDivElement>();
   return (
     <section id="kontak" className="py-20 bg-gradient-to-br from-background via-card to-background">
       <div className="container mx-auto px-4 text-center">
-        <div className="mx-auto max-w-2xl rounded-2xl p-8 sm:p-12 bg-card border border-border shadow-lg">
+        <div ref={ref} className="reveal mx-auto max-w-2xl rounded-2xl p-8 sm:p-12 bg-card border border-border shadow-lg">
           <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
             Siap Transaksi Sekarang?
           </h2>
           <p className="text-sm sm:text-base mb-8 text-muted-foreground">
-            Hubungi salah satu tim kami via WhatsApp atau langsung datang ke toko.
+            Hubungi salah satu tim kami via WhatsApp untuk konsultasi harga dan atur jadwal COD.
           </p>
 
           {/* Contact Person Grid */}
@@ -507,8 +509,9 @@ function CtaSection() {
 
 // ─── Section 7: Footer ────────────────────────────────────────
 function LandingFooter() {
+  const ref = useScrollReveal<HTMLElement>();
   return (
-    <footer className="py-8 border-t border-border bg-background">
+    <footer ref={ref} className="reveal py-8 border-t border-border bg-background">
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Brand */}
@@ -526,7 +529,7 @@ function LandingFooter() {
                 Iku Gadget & Stuff
               </p>
               <p className="text-xs text-muted-foreground">
-                Jual Beli HP Bekas Terpercaya
+                Jual Beli HP Bekas Online — COD Surabaya
               </p>
             </div>
           </div>

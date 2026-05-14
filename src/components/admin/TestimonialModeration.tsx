@@ -8,7 +8,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Star, CheckCircle2, XCircle, Loader2, MessageSquare, Upload, Image as ImageIcon,
+  Star, CheckCircle2, XCircle, Loader2, MessageSquare, Upload, Image as ImageIcon, EyeOff, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -200,6 +200,40 @@ export default function TestimonialModeration() {
     onError: (err: Error) => toast.error(err.message),
   });
 
+  const hideMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("testimonials")
+        .update({ status: "pending" })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["testimonials-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["testimonials-public"] });
+      toast.success("Ulasan disembunyikan dari publik");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("testimonials")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["testimonials-admin"] });
+      queryClient.invalidateQueries({ queryKey: ["testimonials-public"] });
+      toast.success("Ulasan dihapus permanen");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
   const pending = testimonials.filter((t) => t.status === "pending");
   const approved = testimonials.filter((t) => t.status === "approved");
 
@@ -298,6 +332,29 @@ export default function TestimonialModeration() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">"{t.ulasan}"</p>
+                  </div>
+                  {/* Actions: Hide + Delete */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs gap-1 text-muted-foreground hover:text-amber-500"
+                      onClick={() => hideMutation.mutate(t.id)}
+                      disabled={hideMutation.isPending}
+                      title="Sembunyikan dari publik"
+                    >
+                      <EyeOff className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                      onClick={() => deleteMutation.mutate(t.id)}
+                      disabled={deleteMutation.isPending}
+                      title="Hapus permanen"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
