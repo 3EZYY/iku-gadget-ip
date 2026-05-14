@@ -284,7 +284,7 @@ export default function OwnerPeriodStats({ data }: OwnerPeriodStatsProps) {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
           {/* Profit Toko */}
-          <Card className="overflow-hidden border-amber-200/50 bg-gradient-to-br from-amber-950/20 to-card dark:border-amber-800/40">
+          <Card className="overflow-hidden border-amber-200 bg-gradient-to-br from-white to-amber-50 dark:border-amber-800/40 dark:from-amber-950/20 dark:to-card">
             <CardContent className="p-4 relative">
               <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full bg-amber-500/10" />
               <div className="flex items-start justify-between mb-2">

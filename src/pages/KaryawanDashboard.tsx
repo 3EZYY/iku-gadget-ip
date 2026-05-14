@@ -9,6 +9,8 @@ import { signOut } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, ShoppingCart, Store, BarChart3, Sparkles, Smartphone } from "lucide-react";
 import logo from "@/assets/logo.png";
+import logoLight from "@/assets/logo1.png";
+import logoDark from "@/assets/logo2.png";
 
 // ── Migrated components from Project A ───────────────────────
 import DashboardStats from "@/components/karyawan/Dashboard";
@@ -118,13 +120,8 @@ export default function KaryawanDashboard() {
       <header className="border-b bg-card sticky top-0 z-50 shadow-sm">
         <div className="container flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <img
-              src={logo}
-              alt="Iku Gadget"
-              width={36}
-              height={36}
-              className="rounded-xl"
-            />
+            <img src={logoLight} alt="Iku Gadget" width={36} height={36} className="dark:hidden" />
+            <img src={logoDark} alt="Iku Gadget" width={36} height={36} className="hidden dark:block" />
             <div className="flex items-center gap-2">
               <span className="font-bold text-base tracking-tight">Iku Gadget</span>
               <Badge className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary border-primary/20 font-semibold">

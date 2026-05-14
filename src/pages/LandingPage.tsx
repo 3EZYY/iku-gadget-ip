@@ -55,64 +55,46 @@ function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden noise-overlay bg-gradient-to-br from-background via-card to-background dark:from-[hsl(222_47%_6%)] dark:via-[hsl(222_40%_10%)] dark:to-[hsl(215_50%_8%)]"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{ backgroundColor: "hsl(var(--lp-bg))" }}
     >
-      {/* Decorative glow blobs */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full opacity-20 dark:opacity-20"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(160 70% 45%) 0%, transparent 70%)",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-32 -right-32 h-[400px] w-[400px] rounded-full opacity-15 dark:opacity-15"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(200 90% 55%) 0%, transparent 70%)",
-        }}
-      />
+      {/* Subtle gold glow blobs */}
+      <div aria-hidden="true" className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full opacity-[0.06]"
+        style={{ background: "radial-gradient(circle, #D4AF37 0%, transparent 70%)" }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-40 h-[400px] w-[400px] rounded-full opacity-[0.04]"
+        style={{ background: "radial-gradient(circle, #D4AF37 0%, transparent 70%)" }} />
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Logo */}
-        <div className="animate-fade-in flex justify-center mb-6">
-          <img
-            src={logoLight}
-            alt="Iku Gadget & Stuff"
-            width={300}
-            className="dark:hidden"
-          />
-          <img
-            src={logoDark}
-            alt="Iku Gadget & Stuff"
-            width={300}
-            className="hidden dark:block"
-          />
+        <div className="animate-fade-in flex justify-center mb-8">
+          <img src={logoLight} alt="Iku Gadget & Stuff" width={220} className="dark:hidden" />
+          <img src={logoDark}  alt="Iku Gadget & Stuff" width={220} className="hidden dark:block" />
         </div>
 
         {/* Badge */}
-        <div className="animate-fade-up flex justify-center mb-4">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <div className="animate-fade-up flex justify-center mb-5">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+            style={{ border: "1px solid #D4AF3760", background: "#D4AF3715", color: "#D4AF37" }}>
             <BadgeCheck className="h-3.5 w-3.5" />
             Terpercaya sejak 2021
           </span>
         </div>
 
         {/* Headline */}
-        <h1 className="animate-fade-up-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 text-foreground">
+        <h1 className="animate-fade-up-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-5"
+          style={{ color: "hsl(var(--lp-fg))" }}>
           Jual HP Lamamu,{" "}
-          <span className="text-primary">Dapat Harga Terbaik.</span>
+          <span style={{ color: "#D4AF37" }}>Dapat Harga Terbaik.</span>
           <br />
           Beli HP Bekas,{" "}
-          <span className="text-brand-secondary">Terjamin Kualitasnya.</span>
+          <span style={{ color: "#D4AF37" }}>Terjamin Kualitasnya.</span>
         </h1>
 
         {/* Sub-headline */}
-        <p className="animate-fade-up-delay-2 mx-auto max-w-xl text-base sm:text-lg mb-8 text-muted-foreground">
-          Iku Gadget & Stuff — jual beli HP bekas terpercaya dengan proses
-          cepat via WhatsApp, harga transparan, dan garansi fungsi. COD area Malang.
+        <p className="animate-fade-up-delay-2 mx-auto max-w-xl text-base sm:text-lg mb-8"
+          style={{ color: "hsl(var(--lp-fg-muted))" }}>
+          Iku Gadget & Stuff — jual beli HP bekas online terpercaya. Proses cepat via WhatsApp,
+          harga transparan, garansi fungsi. COD area Malang.
         </p>
 
         {/* CTA Buttons */}
@@ -121,14 +103,18 @@ function HeroSection() {
             href={WA_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg bg-primary text-primary-foreground px-6 py-3 text-sm font-semibold transition-all duration-200 hover:scale-105 glow-primary"
+            className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-bold transition-all duration-300 hover:scale-105 animate-gold-glow"
+            style={{ background: "#D4AF37", color: "#121212" }}
           >
             <MessageCircle className="h-4 w-4" />
             Hubungi via WhatsApp
           </a>
           <a
             href="#cara-kerja"
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200 hover:bg-accent"
+            className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-semibold transition-all duration-300"
+            style={{ border: "1px solid hsl(var(--lp-border))", color: "hsl(var(--lp-fg))" }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#D4AF3780")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "hsl(var(--lp-border))")}
           >
             Pelajari Lebih Lanjut
             <ChevronRight className="h-4 w-4" />
@@ -137,12 +123,10 @@ function HeroSection() {
       </div>
 
       {/* Scroll indicator */}
-      <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce"
-        aria-hidden="true"
-      >
-        <div className="h-8 w-5 rounded-full border-2 border-border flex items-start justify-center pt-1">
-          <div className="h-2 w-1 rounded-full bg-primary" />
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce" aria-hidden="true">
+        <div className="h-8 w-5 rounded-full flex items-start justify-center pt-1"
+          style={{ border: "2px solid hsl(var(--lp-border))" }}>
+          <div className="h-2 w-1 rounded-full" style={{ background: "#D4AF37" }} />
         </div>
       </div>
     </section>
@@ -155,37 +139,37 @@ const FEATURES = [
     icon: BadgeCheck,
     title: "Harga Transparan",
     desc: "Tidak ada biaya tersembunyi. Harga yang kami tawarkan sudah final dan bisa dinegosiasi secara terbuka.",
-    color: "hsl(160 70% 45%)",
+    color: "#D4AF37",
   },
   {
     icon: ShieldCheck,
     title: "Garansi Fungsi",
     desc: "Setiap HP bekas yang kami jual sudah melalui pengecekan menyeluruh dan bergaransi fungsi 7 hari.",
-    color: "hsl(200 90% 55%)",
+    color: "#D4AF37",
   },
   {
     icon: Zap,
     title: "Proses Cepat",
     desc: "Dari cek kondisi hingga transaksi selesai, prosesnya bisa kurang dari 30 menit.",
-    color: "hsl(28 90% 55%)",
+    color: "#D4AF37",
   },
   {
     icon: Clock,
     title: "Fast Response 6 Hari",
-    desc: "Tim kami aktif Senin–Sabtu pukul 09.00–18.00. Chat kapan saja, kami balas cepat!",
-    color: "hsl(160 70% 45%)",
+    desc: "Tim kami aktif Senin–Sabtu pukul 09.00–21.00. Chat kapan saja, kami balas cepat!",
+    color: "#D4AF37",
   },
 ] as const;
 
 function FeaturesSection() {
   return (
-    <section id="keunggulan" className="py-20 bg-card">
+    <section id="keunggulan" className="py-20" style={{ backgroundColor: "hsl(var(--lp-bg-card))" }}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: "hsl(var(--lp-fg))" }}>
             Kenapa Pilih Iku Gadget?
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-sm sm:text-base" style={{ color: "hsl(var(--lp-fg-muted))" }}>
             Kami hadir untuk membuat jual beli HP bekas jadi lebih mudah dan aman.
           </p>
         </div>
@@ -194,7 +178,8 @@ function FeaturesSection() {
           {FEATURES.map(({ icon: Icon, title, desc, color }) => (
             <div
               key={title}
-              className="rounded-xl p-5 bg-secondary border border-border transition-all duration-200 hover:-translate-y-1 hover:glow-primary-sm"
+              className="gold-card-border rounded-xl p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(212,175,55,0.25)]"
+              style={{ backgroundColor: "hsl(var(--lp-bg-elevated))" }}
             >
               <div
                 className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg"
@@ -202,10 +187,10 @@ function FeaturesSection() {
               >
                 <Icon className="h-5 w-5" style={{ color }} />
               </div>
-              <h3 className="font-semibold mb-2 text-sm text-foreground">
+              <h3 className="font-semibold mb-2 text-sm" style={{ color: "hsl(var(--lp-fg))" }}>
                 {title}
               </h3>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs leading-relaxed" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                 {desc}
               </p>
             </div>
@@ -218,27 +203,31 @@ function FeaturesSection() {
 
 // ─── Section 3: Statistik / Social Proof ──────────────────────
 const STATS = [
-  { icon: TrendingUp, value: "500+",  label: "Transaksi Selesai",  color: "hsl(160 70% 45%)" },
-  { icon: Star,       value: "4.9/5", label: "Rating Pelanggan",   color: "hsl(28 90% 55%)"  },
-  { icon: Users,      value: "300+",  label: "Pelanggan Puas",     color: "hsl(200 90% 55%)" },
-  { icon: Smartphone, value: "3 Thn", label: "Beroperasi",         color: "hsl(160 70% 45%)" },
+  { icon: TrendingUp, value: "500+",  label: "Transaksi Selesai",  color: "#D4AF37" },
+  { icon: Star,       value: "4.9/5", label: "Rating Pelanggan",   color: "#D4AF37" },
+  { icon: Users,      value: "300+",  label: "Pelanggan Puas",     color: "#D4AF37" },
+  { icon: Smartphone, value: "3 Thn", label: "Beroperasi",         color: "#D4AF37" },
 ] as const;
 
 function StatsSection() {
   return (
-    <section id="statistik" className="py-16 bg-gradient-to-b from-card to-background">
+    <section id="statistik" className="py-16" style={{ backgroundColor: "hsl(var(--lp-bg))" }}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {STATS.map(({ icon: Icon, value, label, color }) => (
             <div
               key={label}
-              className="rounded-xl p-6 text-center bg-card border border-border"
+              className="rounded-xl p-6 text-center"
+              style={{
+                backgroundColor: "hsl(var(--lp-bg-card))",
+                border: "1px solid hsl(var(--lp-border))",
+              }}
             >
               <Icon className="mx-auto mb-3 h-6 w-6" style={{ color }} />
-              <p className="font-mono text-3xl font-bold mb-1 text-foreground">
+              <p className="font-mono text-3xl font-bold mb-1" style={{ color: "hsl(var(--lp-fg))" }}>
                 {value}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                 {label}
               </p>
             </div>
@@ -270,13 +259,13 @@ const STEPS = [
 
 function HowItWorksSection() {
   return (
-    <section id="cara-kerja" className="py-20 bg-background">
+    <section id="cara-kerja" className="py-20" style={{ backgroundColor: "hsl(var(--lp-bg))" }}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: "hsl(var(--lp-fg))" }}>
             Cara Kerjanya Simpel
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-sm sm:text-base" style={{ color: "hsl(var(--lp-fg-muted))" }}>
             Tiga langkah mudah untuk jual atau beli HP bekas di Iku Gadget.
           </p>
         </div>
@@ -285,21 +274,24 @@ function HowItWorksSection() {
           {/* Single connecting line behind all steps — desktop only */}
           <div
             aria-hidden="true"
-            className="hidden lg:block absolute top-6 left-[16%] right-[16%] h-px bg-gradient-to-r from-primary/30 via-border to-primary/30 -z-0"
+            className="lp-connector hidden lg:block absolute top-6 left-[16%] right-[16%] h-px -z-0"
           />
 
           {STEPS.map(({ num, title, desc }) => (
-            <div key={num} className="flex-1 flex flex-col lg:items-center lg:text-center relative z-10">
+            <div key={num} className="flex-1 flex flex-col lg:items-center lg:text-center relative z-10 group">
               {/* Step number — solid bg to mask the line behind */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 glow-primary-sm bg-background border border-primary/40 text-primary">
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 group-hover:shadow-[0_0_18px_rgba(212,175,55,0.35)]"
+                style={{ background: "hsl(var(--lp-bg))", border: "1px solid #D4AF3760", color: "#D4AF37" }}
+              >
                 {num}
               </div>
 
               <div className="lg:px-6">
-                <h3 className="font-semibold mb-2 text-foreground">
+                <h3 className="font-semibold mb-2" style={{ color: "hsl(var(--lp-fg))" }}>
                   {title}
                 </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                   {desc}
                 </p>
               </div>
@@ -354,14 +346,14 @@ function TestimonialsSection() {
   const hasDbData = (dbTestimonials?.length ?? 0) > 0;
 
   return (
-    <section id="testimoni" className="py-20 bg-card">
+    <section id="testimoni" className="py-20" style={{ backgroundColor: "hsl(var(--lp-bg-card))" }}>
       <div className="container mx-auto px-4">
         {/* Header — centered */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: "hsl(var(--lp-fg))" }}>
             Kata Pelanggan Kami
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mb-5">
+          <p className="text-sm sm:text-base mb-5" style={{ color: "hsl(var(--lp-fg-muted))" }}>
             Kepercayaan pelanggan adalah prioritas utama kami.
           </p>
           <TestimonialForm />
@@ -371,7 +363,14 @@ function TestimonialsSection() {
         {isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-xl p-5 bg-secondary border border-border space-y-3">
+              <div
+                key={i}
+                className="rounded-xl p-5 space-y-3"
+                style={{
+                  backgroundColor: "hsl(var(--lp-bg-elevated))",
+                  border: "1px solid hsl(var(--lp-border))",
+                }}
+              >
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-16 w-full" />
                 <Skeleton className="h-4 w-20" />
@@ -386,7 +385,11 @@ function TestimonialsSection() {
             {dbTestimonials!.map((t) => (
               <div
                 key={t.id}
-                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
+                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1"
+                style={{
+                  backgroundColor: "hsl(var(--lp-bg-elevated))",
+                  border: "1px solid hsl(var(--lp-border))",
+                }}
               >
                 {/* Photo with lightbox */}
                 {t.foto_url && (
@@ -417,16 +420,19 @@ function TestimonialsSection() {
                 </div>
 
                 {/* Text — rendered as plain text, no dangerouslySetInnerHTML */}
-                <p className="text-sm leading-relaxed mb-4 text-muted-foreground">
+                <p className="text-sm leading-relaxed mb-4" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                   "{t.ulasan}"
                 </p>
 
                 {/* Author */}
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/20 text-primary">
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                    style={{ background: "#D4AF3720", color: "#D4AF37" }}
+                  >
                     {t.nama.charAt(0).toUpperCase()}
                   </div>
-                  <span className="text-sm font-medium text-foreground">{t.nama}</span>
+                  <span className="text-sm font-medium" style={{ color: "hsl(var(--lp-fg))" }}>{t.nama}</span>
                 </div>
               </div>
             ))}
@@ -439,19 +445,26 @@ function TestimonialsSection() {
             {FALLBACK_TESTIMONIALS.map(({ name, avatar, rating, text }) => (
               <div
                 key={name}
-                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1 bg-secondary border border-border"
+                className="rounded-xl p-5 border-gradient transition-all duration-200 hover:-translate-y-1"
+                style={{
+                  backgroundColor: "hsl(var(--lp-bg-elevated))",
+                  border: "1px solid hsl(var(--lp-border))",
+                }}
               >
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: rating }).map((_, i) => (
                     <Star key={i} className="h-3.5 w-3.5 fill-current text-accent-orange" />
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed mb-4 text-muted-foreground">"{text}"</p>
+                <p className="text-sm leading-relaxed mb-4" style={{ color: "hsl(var(--lp-fg-muted))" }}>"{text}"</p>
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold bg-primary/20 text-primary">
+                  <div
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                    style={{ background: "#D4AF3720", color: "#D4AF37" }}
+                  >
                     {avatar}
                   </div>
-                  <span className="text-sm font-medium text-foreground">{name}</span>
+                  <span className="text-sm font-medium" style={{ color: "hsl(var(--lp-fg))" }}>{name}</span>
                 </div>
               </div>
             ))}
@@ -466,13 +479,20 @@ function TestimonialsSection() {
 function CtaSection() {
   const ref = useScrollReveal<HTMLDivElement>();
   return (
-    <section id="kontak" className="py-20 bg-gradient-to-br from-background via-card to-background">
+    <section id="kontak" className="py-20" style={{ backgroundColor: "hsl(var(--lp-bg))" }}>
       <div className="container mx-auto px-4 text-center">
-        <div ref={ref} className="reveal mx-auto max-w-2xl rounded-2xl p-8 sm:p-12 bg-card border border-border shadow-lg">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">
+        <div
+          ref={ref}
+          className="reveal mx-auto max-w-2xl rounded-2xl p-8 sm:p-12 shadow-lg"
+          style={{
+            backgroundColor: "hsl(var(--lp-bg-card))",
+            border: "1px solid hsl(var(--lp-border))",
+          }}
+        >
+          <h2 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: "hsl(var(--lp-fg))" }}>
             Siap Transaksi Sekarang?
           </h2>
-          <p className="text-sm sm:text-base mb-8 text-muted-foreground">
+          <p className="text-sm sm:text-base mb-8" style={{ color: "hsl(var(--lp-fg-muted))" }}>
             Hubungi salah satu tim kami via WhatsApp untuk konsultasi harga dan atur jadwal COD.
           </p>
 
@@ -484,20 +504,35 @@ function CtaSection() {
                 href={`https://wa.me/${number}?text=${WA_TEXT}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-secondary p-4 transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 hover:glow-primary-sm group"
+                className="flex flex-col items-center gap-2 rounded-xl p-4 transition-all duration-200 hover:-translate-y-1 group"
+                style={{
+                  backgroundColor: "hsl(var(--lp-bg-elevated))",
+                  border: "1px solid hsl(var(--lp-border))",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#D4AF3780";
+                  (e.currentTarget as HTMLElement).style.backgroundColor = "#D4AF3708";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--lp-border))";
+                  (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(var(--lp-bg-elevated))";
+                }}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <MessageCircle className="h-5 w-5 text-primary" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full transition-colors" style={{ background: "#D4AF3715" }}>
+                  <MessageCircle className="h-5 w-5" style={{ color: "#D4AF37" }} />
                 </div>
-                <span className="text-sm font-semibold text-foreground">{name}</span>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-sm font-semibold" style={{ color: "hsl(var(--lp-fg))" }}>{name}</span>
+                <span className="text-[10px] font-mono" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                   {`0${number.replace(/^62/, "")}`}
                 </span>
               </a>
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-muted-foreground pt-4 border-t border-border">
+          <div
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm pt-4 border-t"
+            style={{ color: "hsl(var(--lp-fg-muted))", borderColor: "hsl(var(--lp-border))" }}
+          >
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
               {STORE_HOURS}
@@ -518,7 +553,14 @@ function CtaSection() {
 function LandingFooter() {
   const ref = useScrollReveal<HTMLElement>();
   return (
-    <footer ref={ref} className="reveal py-8 border-t border-border bg-background">
+    <footer
+      ref={ref}
+      className="reveal py-8 border-t"
+      style={{
+        backgroundColor: "hsl(var(--lp-bg))",
+        borderColor: "hsl(var(--lp-border))",
+      }}
+    >
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           {/* Brand */}
@@ -540,17 +582,17 @@ function LandingFooter() {
               loading="lazy"
             />
             <div>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-sm font-semibold" style={{ color: "hsl(var(--lp-fg))" }}>
                 Iku Gadget & Stuff
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs" style={{ color: "hsl(var(--lp-fg-muted))" }}>
                 Jual Beli HP Bekas Online — COD Malang
               </p>
             </div>
           </div>
 
           {/* Address */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(var(--lp-fg-muted))" }}>
             <MapPin className="h-3.5 w-3.5 shrink-0" />
             {STORE_ADDRESS}
           </div>
@@ -559,11 +601,12 @@ function LandingFooter() {
           <div className="flex flex-col items-center sm:items-end gap-1">
             <Link
               to="/login"
-              className="text-xs text-primary transition-colors hover:underline"
+              className="text-xs transition-colors hover:underline"
+              style={{ color: "#D4AF37" }}
             >
               Login Sistem →
             </Link>
-            <p className="text-xs text-muted-foreground/70">
+            <p className="text-xs" style={{ color: "hsl(var(--lp-fg-muted) / 0.7)" }}>
               © {new Date().getFullYear()} Iku Gadget & Stuff
             </p>
           </div>
@@ -576,7 +619,13 @@ function LandingFooter() {
 // ─── Sticky Navbar (anchor links) ────────────────────────────
 function LandingNav() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md"
+      style={{
+        backgroundColor: "hsl(var(--lp-bg) / 0.9)",
+        borderColor: "hsl(var(--lp-border))",
+      }}
+    >
       <div className="container mx-auto px-4 flex items-center justify-between h-14">
         <div className="flex items-center gap-2.5">
           <img
@@ -593,13 +642,13 @@ function LandingNav() {
             height={28}
             className="hidden dark:block"
           />
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold" style={{ color: "hsl(var(--lp-fg))" }}>
             Iku Gadget
           </span>
         </div>
 
         {/* Anchor links — hidden on mobile */}
-        <div className="hidden md:flex items-center gap-6 text-xs font-medium text-muted-foreground">
+        <div className="hidden md:flex items-center gap-6 text-xs font-medium">
           {[
             { href: "#keunggulan", label: "Keunggulan" },
             { href: "#cara-kerja", label: "Cara Kerja" },
@@ -610,6 +659,7 @@ function LandingNav() {
               key={href}
               href={href}
               className="transition-colors hover:text-foreground"
+              style={{ color: "hsl(var(--lp-fg-muted))" }}
             >
               {label}
             </a>
@@ -622,7 +672,8 @@ function LandingNav() {
             href={WA_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:scale-105"
+            className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:scale-105"
+            style={{ background: "#D4AF37", color: "#121212" }}
           >
             <MessageCircle className="h-3.5 w-3.5" />
             WhatsApp
@@ -636,13 +687,10 @@ function LandingNav() {
 // ─── Page Composition ─────────────────────────────────────────
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
-      {/* SEO meta tags are handled via index.html */}
+    <div className="landing-theme min-h-screen" style={{ backgroundColor: "hsl(var(--lp-bg))", color: "hsl(var(--lp-fg))" }}>
       <header>
         <LandingNav />
       </header>
-
-      {/* Offset for fixed nav */}
       <main className="pt-14">
         <HeroSection />
         <FeaturesSection />
@@ -651,7 +699,6 @@ export default function LandingPage() {
         <TestimonialsSection />
         <CtaSection />
       </main>
-
       <LandingFooter />
     </div>
   );

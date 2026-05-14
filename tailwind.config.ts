@@ -53,6 +53,10 @@ export default {
         "accent-red": {
           DEFAULT: "hsl(var(--accent-red))",
         },
+        // ── Gold accent (landing page) ────────────────────────
+        "brand-gold": "#D4AF37",
+        "brand-gold-light": "#E8C84A",
+        "brand-gold-dark": "#B8962E",
         // ── Surface layers (dark futuristic) ──────────────────
         "bg-surface": "hsl(222 40% 10%)",
         "bg-elevated": "hsl(222 35% 14%)",

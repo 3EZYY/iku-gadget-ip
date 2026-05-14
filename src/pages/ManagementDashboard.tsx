@@ -15,7 +15,6 @@ import JournalForm from "@/components/JournalForm";
 import JournalTable from "@/components/JournalTable";
 import WeeklySalesChart from "@/components/WeeklySalesChart";
 import NotificationBell from "@/components/NotificationBell";
-import MotivationalQuote from "@/components/MotivationalQuote";
 import IncentivePanel from "@/components/IncentivePanel";
 import UserManagement from "@/components/UserManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
@@ -30,6 +29,8 @@ import {
   Wallet, Crown, Shield, Users, Settings, Package, BarChart3, MessageSquare,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import logoLight from "@/assets/logo1.png";
+import logoDark from "@/assets/logo2.png";
 
 // ─── Types ────────────────────────────────────────────────────
 interface JournalEntry {
@@ -119,7 +120,8 @@ export default function ManagementDashboard() {
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container flex items-center justify-between py-3">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Iku Gadget & Stuff" width={48} height={48} className="rounded-xl shadow-md" />
+            <img src={logoLight} alt="Iku Gadget & Stuff" width={48} height={48} className="rounded-xl shadow-md dark:hidden" />
+            <img src={logoDark} alt="Iku Gadget & Stuff" width={48} height={48} className="rounded-xl shadow-md hidden dark:block" />
             <div>
               <h1 className="text-lg font-bold tracking-tight">Iku Gadget & Stuff</h1>
               <div className="flex items-center gap-2">
@@ -139,7 +141,6 @@ export default function ManagementDashboard() {
       </header>
 
       <main className="container py-6 space-y-6">
-        <MotivationalQuote />
 
         {/* ── Owner: Period-filtered stats with delta ──────────── */}
         {isOwner && <OwnerPeriodStats data={allData} />}

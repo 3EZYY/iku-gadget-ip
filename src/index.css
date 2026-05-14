@@ -238,7 +238,66 @@
   }
 }
 
-/* ─── Print / PDF Export ───────────────────────────────────── */
+/* ─── Landing Page Theme — Classic Minimalist Gold ────────────
+   Scoped to .landing-theme so dashboards keep their dark palette.
+   Gold: #D4AF37 = hsl(46 65% 52%)
+   ─────────────────────────────────────────────────────────── */
+
+/* Light mode landing */
+.landing-theme {
+  --lp-bg:           0 0% 98%;          /* #FAFAFA */
+  --lp-bg-card:      0 0% 100%;         /* #FFFFFF */
+  --lp-bg-elevated:  0 0% 96%;          /* #F5F5F5 */
+  --lp-fg:           0 0% 7%;           /* #121212 */
+  --lp-fg-muted:     0 0% 40%;          /* #666 */
+  --lp-gold:         46 65% 52%;        /* #D4AF37 */
+  --lp-gold-fg:      0 0% 7%;           /* dark text on gold */
+  --lp-border:       0 0% 88%;          /* #E0E0E0 */
+}
+
+/* Dark mode landing */
+.dark .landing-theme {
+  --lp-bg:           0 0% 4%;           /* #0A0A0A */
+  --lp-bg-card:      0 0% 8%;           /* #141414 */
+  --lp-bg-elevated:  0 0% 12%;          /* #1E1E1E */
+  --lp-fg:           0 0% 96%;          /* #F5F5F5 */
+  --lp-fg-muted:     0 0% 60%;          /* #999 */
+  --lp-gold:         46 65% 52%;        /* #D4AF37 */
+  --lp-gold-fg:      0 0% 7%;           /* dark text on gold */
+  --lp-border:       0 0% 18%;          /* #2E2E2E */
+}
+
+/* ─── Landing utility classes ─────────────────────────────── */
+.landing-theme .lp-bg        { background-color: hsl(var(--lp-bg)); }
+.landing-theme .lp-bg-card   { background-color: hsl(var(--lp-bg-card)); }
+.landing-theme .lp-bg-elev   { background-color: hsl(var(--lp-bg-elevated)); }
+.landing-theme .lp-text      { color: hsl(var(--lp-fg)); }
+.landing-theme .lp-text-muted{ color: hsl(var(--lp-fg-muted)); }
+.landing-theme .lp-border    { border-color: hsl(var(--lp-border)); }
+
+/* Gold glow for CTA */
+@keyframes gold-glow-pulse {
+  0%, 100% { box-shadow: 0 0 16px hsl(46 65% 52% / 0.4), 0 0 32px hsl(46 65% 52% / 0.15); }
+  50%       { box-shadow: 0 0 28px hsl(46 65% 52% / 0.65), 0 0 48px hsl(46 65% 52% / 0.25); }
+}
+.animate-gold-glow { animation: gold-glow-pulse 2.8s ease-in-out infinite; }
+
+/* Gold border-gradient for cards */
+.landing-theme .gold-card-border {
+  border: 1px solid hsl(var(--lp-border));
+  transition: border-color 300ms ease, box-shadow 300ms ease;
+}
+.landing-theme .gold-card-border:hover {
+  border-color: hsl(46 65% 52% / 0.5);
+  box-shadow: 0 4px 24px hsl(46 65% 52% / 0.12);
+}
+
+/* Connecting line gold */
+.lp-connector {
+  background: linear-gradient(90deg, transparent, hsl(46 65% 52% / 0.4), transparent);
+}
+
+
 @media print {
   /* Hide everything by default */
   body * {
