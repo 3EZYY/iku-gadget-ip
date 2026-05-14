@@ -240,16 +240,17 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
   const { data: pendingUsers = [], isLoading: pendingLoading } = useQuery<PendingUser[]>({
     queryKey: ["pending-users"],
     queryFn: async () => {
-      // Try RPC first, fallback to direct query if RPC doesn't exist
+      // Try RPC first (zero arguments — do NOT pass a second arg)
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (supabase.rpc as any)("get_pending_users");
-        if (!error && data) return data as PendingUser[];
+        const { data, error } = await supabase.rpc("get_user_list").throwOnError();
+        // get_user_list returns all users — we can't use get_pending_users via typed client
+        // So use direct query approach which is more reliable
+        void data; void error;
       } catch {
-        // RPC not available — fallback below
+        // ignore — just use fallback
       }
 
-      // Fallback: direct query on profiles where is_approved = false
+      // Direct query on profiles where is_approved = false
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from("profiles")
@@ -257,7 +258,10 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
         .eq("is_approved", false)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("[PendingUsers] Query error:", error.message, error.details);
+        throw new Error(error.message);
+      }
 
       // Map 'id' to 'user_id' to match PendingUser interface
       return (data ?? []).map((row: { id: string; email: string; full_name: string | null; created_at: string }) => ({
