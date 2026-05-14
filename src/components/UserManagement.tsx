@@ -144,12 +144,30 @@ function ApproveUserDialog({
   const handleApprove = async () => {
     setLoading(true);
     try {
+      // Try RPC first
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase.rpc as any)("approve_user", {
+      const { error: rpcError } = await (supabase.rpc as any)("approve_user", {
         _target_user_id: user.user_id,
         _role: role,
       });
-      if (error) throw error;
+
+      if (rpcError) {
+        // Fallback: direct update if RPC not available
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateErr } = await (supabase as any)
+          .from("profiles")
+          .update({ is_approved: true })
+          .eq("id", user.user_id);
+        if (updateErr) throw updateErr;
+
+        // Also upsert role
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: roleErr } = await (supabase as any)
+          .from("user_roles")
+          .upsert({ user_id: user.user_id, role }, { onConflict: "user_id" });
+        if (roleErr) throw roleErr;
+      }
+
       toast.success(`${user.email} disetujui sebagai ${role}`);
       setOpen(false);
       onApproved();
@@ -222,10 +240,32 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
   const { data: pendingUsers = [], isLoading: pendingLoading } = useQuery<PendingUser[]>({
     queryKey: ["pending-users"],
     queryFn: async () => {
+      // Try RPC first, fallback to direct query if RPC doesn't exist
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase.rpc as any)("get_pending_users");
+        if (!error && data) return data as PendingUser[];
+      } catch {
+        // RPC not available — fallback below
+      }
+
+      // Fallback: direct query on profiles where is_approved = false
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase.rpc as any)("get_pending_users");
+      const { data, error } = await (supabase as any)
+        .from("profiles")
+        .select("id, email, full_name, created_at")
+        .eq("is_approved", false)
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
-      return (data ?? []) as PendingUser[];
+
+      // Map 'id' to 'user_id' to match PendingUser interface
+      return (data ?? []).map((row: { id: string; email: string; full_name: string | null; created_at: string }) => ({
+        user_id: row.id,
+        email: row.email ?? "",
+        full_name: row.full_name,
+        created_at: row.created_at,
+      })) as PendingUser[];
     },
   });
 

@@ -27,6 +27,8 @@ import {
   Users,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import logoLight from "@/assets/logo1.png";
+import logoDark from "@/assets/logo2.png";
 import LandingDarkModeToggle from "@/components/landing/DarkModeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -77,11 +79,16 @@ function HeroSection() {
         {/* Logo */}
         <div className="animate-fade-in flex justify-center mb-6">
           <img
-            src={logo}
+            src={logoLight}
             alt="Iku Gadget & Stuff"
-            width={72}
-            height={72}
-            className="rounded-2xl shadow-lg glow-primary-sm"
+            width={300}
+            className="dark:hidden"
+          />
+          <img
+            src={logoDark}
+            alt="Iku Gadget & Stuff"
+            width={300}
+            className="hidden dark:block"
           />
         </div>
 
@@ -104,8 +111,8 @@ function HeroSection() {
 
         {/* Sub-headline */}
         <p className="animate-fade-up-delay-2 mx-auto max-w-xl text-base sm:text-lg mb-8 text-muted-foreground">
-          Iku Gadget & Stuff — jual beli HP bekas online terpercaya dengan proses
-          cepat via WhatsApp, harga transparan, dan garansi fungsi. COD area Surabaya.
+          Iku Gadget & Stuff — jual beli HP bekas terpercaya dengan proses
+          cepat via WhatsApp, harga transparan, dan garansi fungsi. COD area Malang.
         </p>
 
         {/* CTA Buttons */}
@@ -517,11 +524,19 @@ function LandingFooter() {
           {/* Brand */}
           <div className="flex items-center gap-3">
             <img
-              src={logo}
+              src={logoLight}
               alt="Iku Gadget & Stuff"
-              width={32}
+              width={75}
               height={32}
-              className="rounded-lg"
+              className="dark:hidden"
+              loading="lazy"
+            />
+            <img
+              src={logoDark}
+              alt="Iku Gadget & Stuff"
+              width={75}
+              height={32}
+              className="hidden dark:block"
               loading="lazy"
             />
             <div>
@@ -529,7 +544,7 @@ function LandingFooter() {
                 Iku Gadget & Stuff
               </p>
               <p className="text-xs text-muted-foreground">
-                Jual Beli HP Bekas Online — COD Surabaya
+                Jual Beli HP Bekas Online — COD Malang
               </p>
             </div>
           </div>
@@ -565,11 +580,18 @@ function LandingNav() {
       <div className="container mx-auto px-4 flex items-center justify-between h-14">
         <div className="flex items-center gap-2.5">
           <img
-            src={logo}
+            src={logoLight}
             alt="Iku Gadget"
-            width={28}
+            width={50}
             height={28}
-            className="rounded-lg"
+            className="dark:hidden"
+          />
+          <img
+            src={logoDark}
+            alt="Iku Gadget"
+            width={50}
+            height={28}
+            className="hidden dark:block"
           />
           <span className="text-sm font-semibold text-foreground">
             Iku Gadget
