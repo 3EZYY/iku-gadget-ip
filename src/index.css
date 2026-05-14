@@ -6,107 +6,107 @@
 @tailwind utilities;
 
 @layer base {
-  /* ── Light mode (fallback — app primarily uses dark) ──────── */
+  /* ── Light mode ──────────────────────────────────────────── */
   :root {
     /* Backgrounds */
-    --background:        0 0% 96%;
-    --foreground:        220 20% 20%;
+    --background:        0 0% 98%;
+    --foreground:        0 0% 7%;
     --card:              0 0% 100%;
-    --card-foreground:   220 20% 20%;
+    --card-foreground:   0 0% 7%;
     --popover:           0 0% 100%;
-    --popover-foreground: 220 20% 20%;
+    --popover-foreground: 0 0% 7%;
 
-    /* Brand */
-    --primary:           160 70% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary:         160 20% 94%;
-    --secondary-foreground: 160 60% 30%;
+    /* Brand — monochrome (black accent) */
+    --primary:           0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary:         0 0% 96%;
+    --secondary-foreground: 0 0% 9%;
 
     /* Muted / Accent */
-    --muted:             220 10% 94%;
-    --muted-foreground:  220 10% 50%;
-    --accent:            160 30% 90%;
-    --accent-foreground: 160 60% 30%;
+    --muted:             0 0% 94%;
+    --muted-foreground:  0 0% 45%;
+    --accent:            0 0% 94%;
+    --accent-foreground: 0 0% 9%;
 
     /* Semantic */
     --destructive:       0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders & Inputs */
-    --border:            220 10% 90%;
-    --input:             220 10% 90%;
-    --ring:              160 70% 45%;
+    --border:            0 0% 88%;
+    --input:             0 0% 88%;
+    --ring:              0 0% 9%;
 
     /* Radius */
     --radius:            0.75rem;
 
     /* Custom tokens */
-    --chart-unit:        200 90% 55%;
-    --brand-secondary:   200 90% 55%;
+    --chart-unit:        0 0% 30%;
+    --brand-secondary:   0 0% 30%;
     --accent-orange:     28 90% 55%;
     --accent-red:        0 72% 55%;
 
     /* Sidebar */
     --sidebar-background:          0 0% 98%;
-    --sidebar-foreground:          240 5.3% 26.1%;
-    --sidebar-primary:             160 70% 45%;
-    --sidebar-primary-foreground:  0 0% 100%;
-    --sidebar-accent:              160 30% 94%;
-    --sidebar-accent-foreground:   160 60% 30%;
-    --sidebar-border:              220 13% 91%;
-    --sidebar-ring:                160 70% 45%;
+    --sidebar-foreground:          0 0% 20%;
+    --sidebar-primary:             0 0% 9%;
+    --sidebar-primary-foreground:  0 0% 98%;
+    --sidebar-accent:              0 0% 94%;
+    --sidebar-accent-foreground:   0 0% 9%;
+    --sidebar-border:              0 0% 88%;
+    --sidebar-ring:                0 0% 9%;
   }
 
-  /* ── Dark Futuristic Elegant ──────────────────────────────── */
+  /* ── Dark Minimalist ──────────────────────────────────────── */
   .dark {
-    /* Backgrounds — dark blue-black palette */
-    --background:        222 47% 6%;
-    --foreground:        210 40% 95%;
-    --card:              222 40% 10%;
-    --card-foreground:   210 40% 95%;
-    --popover:           222 40% 10%;
-    --popover-foreground: 210 40% 95%;
+    /* Backgrounds — pure black */
+    --background:        0 0% 4%;
+    --foreground:        0 0% 96%;
+    --card:              0 0% 7%;
+    --card-foreground:   0 0% 96%;
+    --popover:           0 0% 7%;
+    --popover-foreground: 0 0% 96%;
 
-    /* Brand — neon green (soft) */
-    --primary:           160 70% 45%;
-    --primary-foreground: 222 47% 6%;
+    /* Brand — monochrome (white accent) */
+    --primary:           0 0% 96%;
+    --primary-foreground: 0 0% 4%;
 
     /* Secondary */
-    --secondary:         222 35% 14%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary:         0 0% 12%;
+    --secondary-foreground: 0 0% 90%;
 
     /* Muted */
-    --muted:             222 35% 14%;
-    --muted-foreground:  215 20% 65%;
+    --muted:             0 0% 12%;
+    --muted-foreground:  0 0% 55%;
 
     /* Accent */
-    --accent:            222 35% 14%;
-    --accent-foreground: 210 40% 90%;
+    --accent:            0 0% 12%;
+    --accent-foreground: 0 0% 90%;
 
     /* Semantic */
     --destructive:       0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
     /* Borders & Inputs */
-    --border:            215 30% 20%;
-    --input:             222 35% 14%;
-    --ring:              160 70% 45%;
+    --border:            0 0% 16%;
+    --input:             0 0% 12%;
+    --ring:              0 0% 96%;
 
     /* Custom tokens */
-    --chart-unit:        200 90% 55%;
-    --brand-secondary:   200 90% 55%;
+    --chart-unit:        0 0% 70%;
+    --brand-secondary:   0 0% 70%;
     --accent-orange:     28 90% 55%;
     --accent-red:        0 72% 55%;
 
     /* Sidebar */
-    --sidebar-background:          222 47% 6%;
-    --sidebar-foreground:          210 40% 90%;
-    --sidebar-primary:             160 70% 45%;
-    --sidebar-primary-foreground:  222 47% 6%;
-    --sidebar-accent:              222 35% 14%;
-    --sidebar-accent-foreground:   210 40% 90%;
-    --sidebar-border:              215 30% 20%;
-    --sidebar-ring:                160 70% 45%;
+    --sidebar-background:          0 0% 4%;
+    --sidebar-foreground:          0 0% 90%;
+    --sidebar-primary:             0 0% 96%;
+    --sidebar-primary-foreground:  0 0% 4%;
+    --sidebar-accent:              0 0% 12%;
+    --sidebar-accent-foreground:   0 0% 90%;
+    --sidebar-border:              0 0% 16%;
+    --sidebar-ring:                0 0% 96%;
   }
 }
 
@@ -190,13 +190,13 @@
     animation: progress-fill 0.6s ease-out both;
   }
 
-  /* Glow effects */
+  /* Glow effects — monochrome */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(160 70% 45% / 0.35);
+    box-shadow: 0 0 20px hsl(0 0% 50% / 0.2);
   }
 
   .glow-primary-sm {
-    box-shadow: 0 0 12px hsl(160 70% 45% / 0.25);
+    box-shadow: 0 0 12px hsl(0 0% 50% / 0.15);
   }
 
   /* Glassmorphism */
@@ -207,7 +207,7 @@
     border: 1px solid hsl(215 30% 20% / 0.8);
   }
 
-  /* Gradient border */
+  /* Gradient border — monochrome */
   .border-gradient {
     border: 1px solid transparent;
     background-clip: padding-box;
@@ -219,7 +219,7 @@
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, hsl(160 70% 45% / 0.4), hsl(200 90% 55% / 0.2));
+    background: linear-gradient(135deg, hsl(0 0% 50% / 0.2), hsl(0 0% 50% / 0.1));
     z-index: -1;
   }
 
@@ -238,9 +238,9 @@
   }
 }
 
-/* ─── Landing Page Theme — Classic Minimalist Gold ────────────
-   Scoped to .landing-theme so dashboards keep their dark palette.
-   Gold: #D4AF37 = hsl(46 65% 52%)
+/* ─── Landing Page Theme — Classic Minimalist Monochrome ──────
+   Scoped to .landing-theme so dashboards keep their green palette.
+   Pure black/white — no gold, no green, no colored accents.
    ─────────────────────────────────────────────────────────── */
 
 /* Light mode landing */
@@ -249,22 +249,22 @@
   --lp-bg-card:      0 0% 100%;         /* #FFFFFF */
   --lp-bg-elevated:  0 0% 96%;          /* #F5F5F5 */
   --lp-fg:           0 0% 7%;           /* #121212 */
-  --lp-fg-muted:     0 0% 40%;          /* #666 */
-  --lp-gold:         46 65% 52%;        /* #D4AF37 */
-  --lp-gold-fg:      0 0% 7%;           /* dark text on gold */
+  --lp-fg-muted:     0 0% 45%;          /* #737373 */
+  --lp-accent:       0 0% 7%;           /* #121212 — buttons/accents = black */
+  --lp-accent-fg:    0 0% 100%;         /* white text on black button */
   --lp-border:       0 0% 88%;          /* #E0E0E0 */
 }
 
 /* Dark mode landing */
 .dark .landing-theme {
   --lp-bg:           0 0% 4%;           /* #0A0A0A */
-  --lp-bg-card:      0 0% 8%;           /* #141414 */
-  --lp-bg-elevated:  0 0% 12%;          /* #1E1E1E */
+  --lp-bg-card:      0 0% 7%;           /* #121212 */
+  --lp-bg-elevated:  0 0% 11%;          /* #1C1C1C */
   --lp-fg:           0 0% 96%;          /* #F5F5F5 */
-  --lp-fg-muted:     0 0% 60%;          /* #999 */
-  --lp-gold:         46 65% 52%;        /* #D4AF37 */
-  --lp-gold-fg:      0 0% 7%;           /* dark text on gold */
-  --lp-border:       0 0% 18%;          /* #2E2E2E */
+  --lp-fg-muted:     0 0% 55%;          /* #8C8C8C */
+  --lp-accent:       0 0% 96%;          /* #F5F5F5 — buttons/accents = white */
+  --lp-accent-fg:    0 0% 4%;           /* dark text on white button */
+  --lp-border:       0 0% 16%;          /* #292929 */
 }
 
 /* ─── Landing utility classes ─────────────────────────────── */
@@ -275,26 +275,19 @@
 .landing-theme .lp-text-muted{ color: hsl(var(--lp-fg-muted)); }
 .landing-theme .lp-border    { border-color: hsl(var(--lp-border)); }
 
-/* Gold glow for CTA */
-@keyframes gold-glow-pulse {
-  0%, 100% { box-shadow: 0 0 16px hsl(46 65% 52% / 0.4), 0 0 32px hsl(46 65% 52% / 0.15); }
-  50%       { box-shadow: 0 0 28px hsl(46 65% 52% / 0.65), 0 0 48px hsl(46 65% 52% / 0.25); }
-}
-.animate-gold-glow { animation: gold-glow-pulse 2.8s ease-in-out infinite; }
-
-/* Gold border-gradient for cards */
-.landing-theme .gold-card-border {
+/* Monochrome card hover */
+.landing-theme .mono-card-border {
   border: 1px solid hsl(var(--lp-border));
-  transition: border-color 300ms ease, box-shadow 300ms ease;
+  transition: border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease;
 }
-.landing-theme .gold-card-border:hover {
-  border-color: hsl(46 65% 52% / 0.5);
-  box-shadow: 0 4px 24px hsl(46 65% 52% / 0.12);
+.landing-theme .mono-card-border:hover {
+  border-color: hsl(var(--lp-fg) / 0.3);
+  box-shadow: 0 4px 20px hsl(var(--lp-fg) / 0.08);
 }
 
-/* Connecting line gold */
+/* Connecting line monochrome */
 .lp-connector {
-  background: linear-gradient(90deg, transparent, hsl(46 65% 52% / 0.4), transparent);
+  background: linear-gradient(90deg, transparent, hsl(var(--lp-border)), transparent);
 }
 
 

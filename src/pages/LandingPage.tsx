@@ -60,9 +60,9 @@ function HeroSection() {
     >
       {/* Subtle gold glow blobs */}
       <div aria-hidden="true" className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full opacity-[0.06]"
-        style={{ background: "radial-gradient(circle, #D4AF37 0%, transparent 70%)" }} />
+        style={{ background: "radial-gradient(circle, hsl(var(--lp-accent)) 0%, transparent 70%)" }} />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 -right-40 h-[400px] w-[400px] rounded-full opacity-[0.04]"
-        style={{ background: "radial-gradient(circle, #D4AF37 0%, transparent 70%)" }} />
+        style={{ background: "radial-gradient(circle, hsl(var(--lp-accent)) 0%, transparent 70%)" }} />
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Logo */}
@@ -74,7 +74,7 @@ function HeroSection() {
         {/* Badge */}
         <div className="animate-fade-up flex justify-center mb-5">
           <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
-            style={{ border: "1px solid #D4AF3760", background: "#D4AF3715", color: "#D4AF37" }}>
+            style={{ border: "1px solid hsl(var(--lp-accent))60", background: "hsl(var(--lp-accent))15", color: "hsl(var(--lp-accent))" }}>
             <BadgeCheck className="h-3.5 w-3.5" />
             Terpercaya sejak 2021
           </span>
@@ -84,10 +84,10 @@ function HeroSection() {
         <h1 className="animate-fade-up-delay-1 font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-5"
           style={{ color: "hsl(var(--lp-fg))" }}>
           Jual HP Lamamu,{" "}
-          <span style={{ color: "#D4AF37" }}>Dapat Harga Terbaik.</span>
+          <span style={{ color: "hsl(var(--lp-accent))" }}>Dapat Harga Terbaik.</span>
           <br />
           Beli HP Bekas,{" "}
-          <span style={{ color: "#D4AF37" }}>Terjamin Kualitasnya.</span>
+          <span style={{ color: "hsl(var(--lp-accent))" }}>Terjamin Kualitasnya.</span>
         </h1>
 
         {/* Sub-headline */}
@@ -103,8 +103,8 @@ function HeroSection() {
             href={WA_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-bold transition-all duration-300 hover:scale-105 animate-gold-glow"
-            style={{ background: "#D4AF37", color: "#121212" }}
+            className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-bold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            style={{ background: "hsl(var(--lp-accent))", color: "hsl(var(--lp-accent-fg))" }}
           >
             <MessageCircle className="h-4 w-4" />
             Hubungi via WhatsApp
@@ -113,7 +113,7 @@ function HeroSection() {
             href="#cara-kerja"
             className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-semibold transition-all duration-300"
             style={{ border: "1px solid hsl(var(--lp-border))", color: "hsl(var(--lp-fg))" }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#D4AF3780")}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "hsl(var(--lp-accent))80")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "hsl(var(--lp-border))")}
           >
             Pelajari Lebih Lanjut
@@ -126,7 +126,7 @@ function HeroSection() {
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce" aria-hidden="true">
         <div className="h-8 w-5 rounded-full flex items-start justify-center pt-1"
           style={{ border: "2px solid hsl(var(--lp-border))" }}>
-          <div className="h-2 w-1 rounded-full" style={{ background: "#D4AF37" }} />
+          <div className="h-2 w-1 rounded-full" style={{ background: "hsl(var(--lp-accent))" }} />
         </div>
       </div>
     </section>
@@ -139,25 +139,25 @@ const FEATURES = [
     icon: BadgeCheck,
     title: "Harga Transparan",
     desc: "Tidak ada biaya tersembunyi. Harga yang kami tawarkan sudah final dan bisa dinegosiasi secara terbuka.",
-    color: "#D4AF37",
+    color: "hsl(var(--lp-accent))",
   },
   {
     icon: ShieldCheck,
     title: "Garansi Fungsi",
     desc: "Setiap HP bekas yang kami jual sudah melalui pengecekan menyeluruh dan bergaransi fungsi 7 hari.",
-    color: "#D4AF37",
+    color: "hsl(var(--lp-accent))",
   },
   {
     icon: Zap,
     title: "Proses Cepat",
     desc: "Dari cek kondisi hingga transaksi selesai, prosesnya bisa kurang dari 30 menit.",
-    color: "#D4AF37",
+    color: "hsl(var(--lp-accent))",
   },
   {
     icon: Clock,
     title: "Fast Response 6 Hari",
     desc: "Tim kami aktif Senin–Sabtu pukul 09.00–21.00. Chat kapan saja, kami balas cepat!",
-    color: "#D4AF37",
+    color: "hsl(var(--lp-accent))",
   },
 ] as const;
 
@@ -178,7 +178,7 @@ function FeaturesSection() {
           {FEATURES.map(({ icon: Icon, title, desc, color }) => (
             <div
               key={title}
-              className="gold-card-border rounded-xl p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_rgba(212,175,55,0.25)]"
+              className="mono-card-border rounded-xl p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_-8px_hsl(var(--lp-fg) / 0.12)]"
               style={{ backgroundColor: "hsl(var(--lp-bg-elevated))" }}
             >
               <div
@@ -203,10 +203,10 @@ function FeaturesSection() {
 
 // ─── Section 3: Statistik / Social Proof ──────────────────────
 const STATS = [
-  { icon: TrendingUp, value: "500+",  label: "Transaksi Selesai",  color: "#D4AF37" },
-  { icon: Star,       value: "4.9/5", label: "Rating Pelanggan",   color: "#D4AF37" },
-  { icon: Users,      value: "300+",  label: "Pelanggan Puas",     color: "#D4AF37" },
-  { icon: Smartphone, value: "3 Thn", label: "Beroperasi",         color: "#D4AF37" },
+  { icon: TrendingUp, value: "500+",  label: "Transaksi Selesai",  color: "hsl(var(--lp-accent))" },
+  { icon: Star,       value: "4.9/5", label: "Rating Pelanggan",   color: "hsl(var(--lp-accent))" },
+  { icon: Users,      value: "300+",  label: "Pelanggan Puas",     color: "hsl(var(--lp-accent))" },
+  { icon: Smartphone, value: "3 Thn", label: "Beroperasi",         color: "hsl(var(--lp-accent))" },
 ] as const;
 
 function StatsSection() {
@@ -281,8 +281,8 @@ function HowItWorksSection() {
             <div key={num} className="flex-1 flex flex-col lg:items-center lg:text-center relative z-10 group">
               {/* Step number — solid bg to mask the line behind */}
               <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 group-hover:shadow-[0_0_18px_rgba(212,175,55,0.35)]"
-                style={{ background: "hsl(var(--lp-bg))", border: "1px solid #D4AF3760", color: "#D4AF37" }}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-mono text-sm font-bold mb-4 group-hover:shadow-[0_0_18px_hsl(var(--lp-fg) / 0.2)]"
+                style={{ background: "hsl(var(--lp-bg))", border: "1px solid hsl(var(--lp-accent))60", color: "hsl(var(--lp-accent))" }}
               >
                 {num}
               </div>
@@ -428,7 +428,7 @@ function TestimonialsSection() {
                 <div className="flex items-center gap-2.5">
                   <div
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                    style={{ background: "#D4AF3720", color: "#D4AF37" }}
+                    style={{ background: "hsl(var(--lp-accent))20", color: "hsl(var(--lp-accent))" }}
                   >
                     {t.nama.charAt(0).toUpperCase()}
                   </div>
@@ -460,7 +460,7 @@ function TestimonialsSection() {
                 <div className="flex items-center gap-2.5">
                   <div
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                    style={{ background: "#D4AF3720", color: "#D4AF37" }}
+                    style={{ background: "hsl(var(--lp-accent))20", color: "hsl(var(--lp-accent))" }}
                   >
                     {avatar}
                   </div>
@@ -510,16 +510,16 @@ function CtaSection() {
                   border: "1px solid hsl(var(--lp-border))",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "#D4AF3780";
-                  (e.currentTarget as HTMLElement).style.backgroundColor = "#D4AF3708";
+                  (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--lp-accent))80";
+                  (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(var(--lp-accent))08";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = "hsl(var(--lp-border))";
                   (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(var(--lp-bg-elevated))";
                 }}
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full transition-colors" style={{ background: "#D4AF3715" }}>
-                  <MessageCircle className="h-5 w-5" style={{ color: "#D4AF37" }} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-full transition-colors" style={{ background: "hsl(var(--lp-accent))15" }}>
+                  <MessageCircle className="h-5 w-5" style={{ color: "hsl(var(--lp-accent))" }} />
                 </div>
                 <span className="text-sm font-semibold" style={{ color: "hsl(var(--lp-fg))" }}>{name}</span>
                 <span className="text-[10px] font-mono" style={{ color: "hsl(var(--lp-fg-muted))" }}>
@@ -602,7 +602,7 @@ function LandingFooter() {
             <Link
               to="/login"
               className="text-xs transition-colors hover:underline"
-              style={{ color: "#D4AF37" }}
+              style={{ color: "hsl(var(--lp-accent))" }}
             >
               Login Sistem →
             </Link>
@@ -673,7 +673,7 @@ function LandingNav() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:scale-105"
-            style={{ background: "#D4AF37", color: "#121212" }}
+            style={{ background: "hsl(var(--lp-accent))", color: "hsl(var(--lp-accent-fg))" }}
           >
             <MessageCircle className="h-3.5 w-3.5" />
             WhatsApp

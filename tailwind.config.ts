@@ -57,9 +57,9 @@ export default {
         "brand-gold": "#D4AF37",
         "brand-gold-light": "#E8C84A",
         "brand-gold-dark": "#B8962E",
-        // ── Surface layers (dark futuristic) ──────────────────
-        "bg-surface": "hsl(222 40% 10%)",
-        "bg-elevated": "hsl(222 35% 14%)",
+        // ── Surface layers (monochrome) ─────────────────────────
+        "bg-surface": "hsl(0 0% 7%)",
+        "bg-elevated": "hsl(0 0% 12%)",
         // ─────────────────────────────────────────────────────
         popover: {
           DEFAULT: "hsl(var(--popover))",
