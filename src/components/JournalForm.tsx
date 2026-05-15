@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useProducts, type Product } from "@/hooks/useProducts";
 
 const JENIS_UNIT_OPTIONS = ["HP", "Laptop", "Tablet", "Aksesoris", "Smartwatch", "Lainnya"];
 
@@ -45,6 +46,9 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [komisiPersen, setKomisiPersen] = useState(50);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const { data: products = [] } = useProducts();
+  const availableProducts = products.filter((p) => p.stok > 0);
   const [form, setForm] = useState({
     tanggal: editData?.tanggal || new Date().toISOString().split("T")[0],
     nama_seller: editData?.nama_seller || "",
@@ -103,6 +107,20 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
       } else {
         const { error } = await supabase.from("journal").insert(payload);
         if (error) throw error;
+
+        // Deduct stock if a product was selected
+        if (selectedProductId) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { error: stockErr } = await (supabase.rpc as any)("deduct_product_stock", {
+            _product_id: selectedProductId,
+          });
+          if (stockErr) {
+            console.error("Stock deduction failed:", stockErr.message);
+            // Don't throw — journal already saved, just warn
+            toast.warning("Transaksi tersimpan, tapi stok gagal dikurangi otomatis.");
+          }
+        }
+
         toast.success("Data berhasil ditambahkan");
       }
       onSuccess();
@@ -143,8 +161,33 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Nama Unit</Label>
-          <Input value={form.nama_unit} onChange={(e) => setForm({ ...form, nama_unit: e.target.value })} placeholder="Nama/model unit" required />
+          <Label>Nama Unit (dari stok)</Label>
+          <Select
+            value={form.nama_unit}
+            onValueChange={(v) => {
+              const product = availableProducts.find((p) => p.nama === v);
+              setForm({
+                ...form,
+                nama_unit: v,
+                harga_beli: product ? Number(product.harga_beli).toLocaleString("id-ID") : form.harga_beli,
+                harga_jual: product ? Number(product.harga_jual).toLocaleString("id-ID") : form.harga_jual,
+              });
+              setSelectedProductId(product?.id ?? null);
+            }}
+          >
+            <SelectTrigger><SelectValue placeholder="Pilih produk dari stok" /></SelectTrigger>
+            <SelectContent>
+              {availableProducts.length === 0 ? (
+                <SelectItem value="__empty" disabled>Tidak ada stok tersedia</SelectItem>
+              ) : (
+                availableProducts.map((p) => (
+                  <SelectItem key={p.id} value={p.nama}>
+                    {p.nama} — Rp {Number(p.harga_beli).toLocaleString("id-ID")}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4">
@@ -164,16 +207,17 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Harga Beli</Label>
+          <Label>Harga Beli {selectedProductId && "(dari stok)"}</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
             <Input
               type="text"
               inputMode="numeric"
               value={form.harga_beli}
-              onChange={(e) => setForm({ ...form, harga_beli: formatThousands(e.target.value) })}
+              onChange={(e) => { if (!selectedProductId) setForm({ ...form, harga_beli: formatThousands(e.target.value) }); }}
               placeholder="0"
               className="pl-8 font-mono"
+              readOnly={!!selectedProductId}
               required
             />
           </div>

@@ -22,6 +22,7 @@ import OnlineStore from "@/components/karyawan/OnlineStore";
 import DarkModeToggle from "@/components/karyawan/DarkModeToggle";
 import TargetProgress from "@/components/karyawan/TargetProgress";
 import JournalForm from "@/components/JournalForm";
+import FormBarangMasuk from "@/components/karyawan/FormBarangMasuk";
 
 // ─── Types ────────────────────────────────────────────────────
 interface JournalEntry {
@@ -187,9 +188,12 @@ export default function KaryawanDashboard() {
 
           {/* ── Tab: Transaksi ─────────────────────────────────────── */}
           <TabsContent value="transaksi" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="text-base font-bold">Riwayat Transaksi</h2>
-              <JournalForm onSuccess={refresh} />
+              <div className="flex items-center gap-2">
+                <FormBarangMasuk />
+                <JournalForm onSuccess={refresh} />
+              </div>
             </div>
             <TransactionTable
               transactions={entries.map(toTransaction)}
