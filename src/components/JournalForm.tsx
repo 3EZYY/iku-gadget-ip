@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,7 @@ interface JournalFormProps {
 export default function JournalForm({ onSuccess, editData, open, onOpenChange }: JournalFormProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [komisiPersen, setKomisiPersen] = useState(50);
   const [form, setForm] = useState({
     tanggal: editData?.tanggal || new Date().toISOString().split("T")[0],
     nama_seller: editData?.nama_seller || "",
@@ -55,10 +56,30 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
     keterangan_biaya: editData?.keterangan_biaya || "",
   });
 
+  // Fetch user's commission percentage
+  useEffect(() => {
+    if (!user) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("profiles")
+      .select("komisi_persen")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }: { data: { komisi_persen: number } | null }) => {
+        if (data?.komisi_persen) setKomisiPersen(data.komisi_persen);
+      });
+  }, [user]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     setLoading(true);
+
+    const hargaJual = Number(parseFormatted(form.harga_jual));
+    const hargaBeli = Number(parseFormatted(form.harga_beli));
+    const biayaOp = Number(parseFormatted(form.biaya_operasional));
+    const profitTotal = hargaJual - hargaBeli - biayaOp;
+    const nominalKomisi = profitTotal * (komisiPersen / 100);
 
     const payload = {
       user_id: user.id,
@@ -66,10 +87,12 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
       nama_seller: form.nama_seller,
       jenis_unit: form.jenis_unit,
       nama_unit: form.nama_unit,
-      harga_jual: Number(parseFormatted(form.harga_jual)),
-      harga_beli: Number(parseFormatted(form.harga_beli)),
-      biaya_operasional: Number(parseFormatted(form.biaya_operasional)),
+      harga_jual: hargaJual,
+      harga_beli: hargaBeli,
+      biaya_operasional: biayaOp,
       keterangan_biaya: form.keterangan_biaya || null,
+      komisi_persen_applied: komisiPersen,
+      nominal_komisi: nominalKomisi,
     };
 
     try {
@@ -92,8 +115,8 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
   };
 
   const profit = Number(parseFormatted(form.harga_jual)) - Number(parseFormatted(form.harga_beli)) - Number(parseFormatted(form.biaya_operasional));
-  const profitSeller = profit / 2;
-  const profitToko = profit / 2;
+  const profitSeller = profit * (komisiPersen / 100);
+  const profitToko = profit - profitSeller;
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -177,8 +200,8 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
 
       <div className="rounded-lg bg-accent p-3 space-y-1 text-sm">
         <div className="flex justify-between"><span className="text-muted-foreground">Profit:</span> <span className="font-semibold">Rp {profit.toLocaleString("id-ID")}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Profit Seller (50%):</span> <span>Rp {profitSeller.toLocaleString("id-ID")}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Profit Toko (50%):</span> <span>Rp {profitToko.toLocaleString("id-ID")}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Profit Seller ({komisiPersen}%):</span> <span>Rp {profitSeller.toLocaleString("id-ID")}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Profit Toko ({100 - komisiPersen}%):</span> <span>Rp {profitToko.toLocaleString("id-ID")}</span></div>
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>

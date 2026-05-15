@@ -96,7 +96,12 @@ export default function TargetProgress({ entries }: TargetProgressProps) {
       s + (Number(e.harga_jual) - Number(e.harga_beli) - Number(e.biaya_operasional)),
     0
   );
-  const sellerShare = totalProfit / 2;
+  const sellerShare = monthEntries.reduce(
+    (s, e) => s + (typeof (e as Record<string, unknown>)["nominal_komisi"] === "number"
+      ? Number((e as Record<string, unknown>)["nominal_komisi"])
+      : (Number(e.harga_jual) - Number(e.harga_beli) - Number(e.biaya_operasional)) * 0.5),
+    0
+  );
   const estimatedBonus = achieved
     ? sellerShare * (config.bonus_percentage / 100)
     : 0;
@@ -166,7 +171,7 @@ export default function TargetProgress({ entries }: TargetProgressProps) {
             <p className={`text-xs font-bold font-mono ${totalProfit >= 0 ? "text-primary" : "text-destructive"}`}>
               {formatRp(sellerShare)}
             </p>
-            <p className="text-[9px] text-muted-foreground">bagian kamu (50%)</p>
+            <p className="text-[9px] text-muted-foreground">bagian kamu</p>
           </div>
 
           {/* Estimasi bonus */}

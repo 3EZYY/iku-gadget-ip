@@ -37,17 +37,17 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 const WA_NUMBER = "6281234567890"; // nomor utama (hero CTA)
 const WA_LINK   = `https://wa.me/${WA_NUMBER}?text=Halo%20Iku%20Gadget%2C%20saya%20ingin%20tanya%20tentang%20HP%20bekas`;
 
-const STORE_ADDRESS = "Melayani COD area Malang & sekitarnya";
+const STORE_ADDRESS = "Jl. Cemara Tidar J2 No. 29, Kota Malang";
 const STORE_HOURS   = "Senin–Sabtu: 09.00–21.00 WIB";
 
 // ─── Contact Persons ──────────────────────────────────────────
 const WA_TEXT = encodeURIComponent("Halo, saya ingin tanya tentang HP bekas di Iku Gadget");
 
 const CONTACTS = [
-  { name: "Anang",  number: "628817053043" },
-  { name: "Lingga", number: "6282142119783" },
-  { name: "Epo",    number: "6282245070900" },
-  { name: "Arya",   number: "62882010490576" },
+  { name: "Lingga",  number: "628817053043" },
+  { name: "Epo", number: "6282142119783" },
+  { name: "Arya",    number: "6282245070900" },
+  { name: "Anang",   number: "62882010490576" },
 ] as const;
 
 // ─── Section 1: Hero ──────────────────────────────────────────
@@ -537,7 +537,7 @@ function CtaSection() {
               <Clock className="h-3.5 w-3.5" />
               {STORE_HOURS}
             </span>
-            <span className="hidden sm:block" aria-hidden="true">·</span>
+            <span className="hidden sm:block" aria-hidden="true"></span>
             <span className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
               {STORE_ADDRESS}

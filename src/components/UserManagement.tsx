@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { createUserWithRole } from "@/lib/auth";
@@ -222,6 +222,64 @@ function ApproveUserDialog({
   );
 }
 
+// ─── Commission % Editor ──────────────────────────────────────
+function CommissionEditor({ userId, onSaved }: { userId: string; onSaved: () => void }) {
+  const [value, setValue] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch current value
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from("profiles")
+      .select("komisi_persen")
+      .eq("id", userId)
+      .maybeSingle()
+      .then(({ data }: { data: { komisi_persen: number } | null }) => {
+        setValue(data?.komisi_persen ?? 50);
+      });
+  }, [userId]);
+
+  const handleSave = async (newVal: number) => {
+    if (newVal === value) return;
+    setSaving(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from("profiles")
+      .update({ komisi_persen: newVal })
+      .eq("id", userId);
+    if (error) {
+      toast.error("Gagal update komisi");
+    } else {
+      setValue(newVal);
+      toast.success(`Komisi diubah ke ${newVal}%`);
+      onSaved();
+    }
+    setSaving(false);
+  };
+
+  if (value === null) return null;
+
+  return (
+    <Select
+      value={String(value)}
+      onValueChange={(v) => handleSave(Number(v))}
+      disabled={saving}
+    >
+      <SelectTrigger className="h-6 w-[70px] text-[10px] px-2">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {[30, 35, 40, 45, 50, 55, 60, 65, 70].map((pct) => (
+          <SelectItem key={pct} value={String(pct)} className="text-xs">
+            {pct}%
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────
 export default function UserManagement({ callerRole }: UserManagementProps) {
   const queryClient = useQueryClient();
@@ -353,6 +411,10 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 ml-3">
+                      {/* Commission % editor for karyawan */}
+                      {u.role === "karyawan" && (
+                        <CommissionEditor userId={u.user_id} onSaved={refresh} />
+                      )}
                       {roleBadge(u.role)}
                       {canDelete(u.role) && (
                         <AlertDialog>
