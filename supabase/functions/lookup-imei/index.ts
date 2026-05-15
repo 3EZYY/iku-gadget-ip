@@ -1,6 +1,8 @@
 // supabase/functions/lookup-imei/index.ts
-// TAC-based device lookup for IMEI checker
+// Smart IMEI Lookup — API Router with fallback
+// Primary: imei.org | Apple chain: ifreeicloud.co.uk | Fallback: imei.info
 // Deploy: supabase functions deploy lookup-imei --no-verify-jwt
+// Secrets: supabase secrets set IMEI_ORG_KEY=xxx IMEI_INFO_KEY=xxx IFREEICLOUD_KEY=xxx
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -10,132 +12,250 @@ const CORS_HEADERS = {
 
 // ─── Types ────────────────────────────────────────────────────
 interface LookupRequest {
-  imei: string; // 15-digit string
+  imei: string;
 }
 
-interface DeviceInfo {
+interface UnifiedResponse {
+  success: boolean;
+  is_apple: boolean;
   brand: string;
   model: string;
-  year?: number;
-  possibleColors?: string[];
-  storageOptions?: string[];
-  ramOptions?: string[];
-  category?: string;
-  confidence?: "high" | "medium" | "low";
-  source?: string;
+  imei: string;
+  tac: string;
+  details: Record<string, unknown>;
+  apple_icloud_status?: Record<string, unknown>;
+  source: string;
   notes?: string;
 }
 
-// ─── TAC database ─────────────────────────────────────────────
-// TAC = first 8 digits of IMEI (Type Allocation Code)
-// Source: public GSMA TAC database + manufacturer documentation
-// This covers the most common devices sold in Indonesia
-const TAC_DB: Record<string, DeviceInfo> = {
-  // ── Apple iPhone ──────────────────────────────────────────
-  "35299511": { brand: "Apple", model: "iPhone 15 Pro Max", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black Titanium", "White Titanium", "Blue Titanium", "Natural Titanium"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["8GB"] },
-  "35299411": { brand: "Apple", model: "iPhone 15 Pro", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black Titanium", "White Titanium", "Blue Titanium", "Natural Titanium"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["8GB"] },
-  "35299311": { brand: "Apple", model: "iPhone 15 Plus", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "Blue", "Green", "Yellow", "Pink"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35299211": { brand: "Apple", model: "iPhone 15", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "Blue", "Green", "Yellow", "Pink"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35299111": { brand: "Apple", model: "iPhone 14 Pro Max", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Black", "Silver", "Gold", "Deep Purple"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["6GB"] },
-  "35298911": { brand: "Apple", model: "iPhone 14 Pro", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Black", "Silver", "Gold", "Deep Purple"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["6GB"] },
-  "35298811": { brand: "Apple", model: "iPhone 14 Plus", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight", "Starlight", "Blue", "Purple", "Product Red", "Yellow"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35298711": { brand: "Apple", model: "iPhone 14", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight", "Starlight", "Blue", "Purple", "Product Red", "Yellow"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35298611": { brand: "Apple", model: "iPhone 13 Pro Max", year: 2021, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Graphite", "Gold", "Silver", "Sierra Blue", "Alpine Green"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["6GB"] },
-  "35298511": { brand: "Apple", model: "iPhone 13 Pro", year: 2021, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Graphite", "Gold", "Silver", "Sierra Blue", "Alpine Green"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["6GB"] },
-  "35298411": { brand: "Apple", model: "iPhone 13", year: 2021, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight", "Starlight", "Blue", "Pink", "Product Red", "Green"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35298311": { brand: "Apple", model: "iPhone 13 Mini", year: 2021, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight", "Starlight", "Blue", "Pink", "Product Red", "Green"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35298211": { brand: "Apple", model: "iPhone 12 Pro Max", year: 2020, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Graphite", "Gold", "Silver", "Pacific Blue"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35298111": { brand: "Apple", model: "iPhone 12 Pro", year: 2020, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Graphite", "Gold", "Silver", "Pacific Blue"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["6GB"] },
-  "35297911": { brand: "Apple", model: "iPhone 12", year: 2020, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Blue", "Green", "Product Red", "Purple"], storageOptions: ["64GB", "128GB", "256GB"], ramOptions: ["4GB"] },
-  "35297811": { brand: "Apple", model: "iPhone 12 Mini", year: 2020, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Blue", "Green", "Product Red", "Purple"], storageOptions: ["64GB", "128GB", "256GB"], ramOptions: ["4GB"] },
-  "35297711": { brand: "Apple", model: "iPhone 11 Pro Max", year: 2019, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Gray", "Silver", "Gold", "Midnight Green"], storageOptions: ["64GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35297611": { brand: "Apple", model: "iPhone 11 Pro", year: 2019, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Gray", "Silver", "Gold", "Midnight Green"], storageOptions: ["64GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35297511": { brand: "Apple", model: "iPhone 11", year: 2019, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Green", "Yellow", "Purple", "Product Red"], storageOptions: ["64GB", "128GB", "256GB"], ramOptions: ["4GB"] },
-  "35297411": { brand: "Apple", model: "iPhone XR", year: 2018, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Blue", "Yellow", "Coral", "Product Red"], storageOptions: ["64GB", "128GB", "256GB"], ramOptions: ["3GB"] },
-  "35297311": { brand: "Apple", model: "iPhone XS Max", year: 2018, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Gray", "Silver", "Gold"], storageOptions: ["64GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35297211": { brand: "Apple", model: "iPhone XS", year: 2018, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Space Gray", "Silver", "Gold"], storageOptions: ["64GB", "256GB", "512GB"], ramOptions: ["4GB"] },
-  "35297111": { brand: "Apple", model: "iPhone SE (2022)", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight", "Starlight", "Product Red"], storageOptions: ["64GB", "128GB", "256GB"], ramOptions: ["4GB"] },
-
-  // ── Samsung Galaxy S ──────────────────────────────────────
-  "35851511": { brand: "Samsung", model: "Galaxy S24 Ultra", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Titanium Black", "Titanium Gray", "Titanium Violet", "Titanium Yellow"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB"] },
-  "35851411": { brand: "Samsung", model: "Galaxy S24+", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Onyx Black", "Marble Gray", "Cobalt Violet", "Amber Yellow"], storageOptions: ["256GB", "512GB"], ramOptions: ["12GB"] },
-  "35851311": { brand: "Samsung", model: "Galaxy S24", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Onyx Black", "Marble Gray", "Cobalt Violet", "Amber Yellow"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35851211": { brand: "Samsung", model: "Galaxy S23 Ultra", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Cream", "Green", "Lavender"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["8GB", "12GB"] },
-  "35851111": { brand: "Samsung", model: "Galaxy S23+", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Cream", "Green", "Lavender"], storageOptions: ["256GB", "512GB"], ramOptions: ["8GB"] },
-  "35850911": { brand: "Samsung", model: "Galaxy S23", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Cream", "Green", "Lavender"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35850811": { brand: "Samsung", model: "Galaxy S22 Ultra", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Phantom White", "Burgundy", "Green"], storageOptions: ["128GB", "256GB", "512GB", "1TB"], ramOptions: ["8GB", "12GB"] },
-  "35850711": { brand: "Samsung", model: "Galaxy S22+", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Phantom White", "Sky Blue", "Violet"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35850611": { brand: "Samsung", model: "Galaxy S22", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Phantom White", "Sky Blue", "Violet", "Bora Purple", "Graphite"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35850511": { brand: "Samsung", model: "Galaxy Z Fold 5", year: 2023, category: "foldable", confidence: "high", source: "GSMA TAC", possibleColors: ["Icy Blue", "Phantom Black", "Cream"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB"] },
-  "35850411": { brand: "Samsung", model: "Galaxy Z Flip 5", year: 2023, category: "foldable", confidence: "high", source: "GSMA TAC", possibleColors: ["Mint", "Graphite", "Cream", "Lavender"], storageOptions: ["256GB", "512GB"], ramOptions: ["8GB"] },
-
-  // ── Samsung Galaxy A ──────────────────────────────────────
-  "35849811": { brand: "Samsung", model: "Galaxy A55", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Awesome Iceblue", "Awesome Lilac", "Awesome Navy", "Awesome Lemon"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35849711": { brand: "Samsung", model: "Galaxy A54", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Awesome Graphite", "Awesome White", "Awesome Violet", "Awesome Lime"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35849611": { brand: "Samsung", model: "Galaxy A35", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Awesome Iceblue", "Awesome Lilac", "Awesome Navy", "Awesome Lemon"], storageOptions: ["128GB", "256GB"], ramOptions: ["6GB", "8GB"] },
-  "35849511": { brand: "Samsung", model: "Galaxy A34", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Awesome Graphite", "Awesome Silver", "Awesome Violet", "Awesome Lime"], storageOptions: ["128GB", "256GB"], ramOptions: ["6GB", "8GB"] },
-
-  // ── Xiaomi / Redmi / POCO ─────────────────────────────────
-  "86800011": { brand: "Xiaomi", model: "14 Ultra", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB", "16GB"] },
-  "86799911": { brand: "Xiaomi", model: "14", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Jade Green", "Pink"], storageOptions: ["256GB", "512GB"], ramOptions: ["12GB", "16GB"] },
-  "86799811": { brand: "Xiaomi", model: "13 Ultra", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Olive Green"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB", "16GB"] },
-  "86799711": { brand: "Xiaomi", model: "13T Pro", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Meadow Green"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB"] },
-  "86799611": { brand: "Xiaomi", model: "13T", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Meadow Green", "Alpine Blue"], storageOptions: ["256GB"], ramOptions: ["8GB", "12GB"] },
-  "86799511": { brand: "Redmi", model: "Note 13 Pro+", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight Black", "Aurora Purple", "Fusion White"], storageOptions: ["256GB", "512GB"], ramOptions: ["8GB", "12GB"] },
-  "86799411": { brand: "Redmi", model: "Note 13 Pro", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight Black", "Aurora Purple", "Coral Purple", "Forest Green"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["8GB", "12GB"] },
-  "86799311": { brand: "Redmi", model: "Note 13", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight Black", "Arctic White", "Ocean Teal"], storageOptions: ["128GB", "256GB"], ramOptions: ["6GB", "8GB"] },
-  "86799211": { brand: "POCO", model: "X6 Pro", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White", "Yellow"], storageOptions: ["256GB", "512GB"], ramOptions: ["8GB", "12GB"] },
-  "86799111": { brand: "POCO", model: "F5 Pro", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "White"], storageOptions: ["256GB", "512GB"], ramOptions: ["8GB", "12GB"] },
-
-  // ── OPPO ──────────────────────────────────────────────────
-  "86798911": { brand: "OPPO", model: "Find X7 Ultra", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Black", "Brown"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB", "16GB"] },
-  "86798811": { brand: "OPPO", model: "Reno 11 Pro", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Rock Gray", "Sky Blue"], storageOptions: ["256GB"], ramOptions: ["12GB"] },
-  "86798711": { brand: "OPPO", model: "Reno 10 Pro+", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Glossy Purple", "Silvery Grey"], storageOptions: ["256GB"], ramOptions: ["12GB"] },
-  "86798611": { brand: "OPPO", model: "A98", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Cool Black", "Dreamy Blue"], storageOptions: ["256GB"], ramOptions: ["8GB"] },
-
-  // ── Vivo ──────────────────────────────────────────────────
-  "86798511": { brand: "Vivo", model: "X100 Pro", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Asteroid Black", "Startrail Blue"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["12GB", "16GB"] },
-  "86798411": { brand: "Vivo", model: "V30 Pro", year: 2024, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Peacock Green", "Sunset Beige"], storageOptions: ["256GB"], ramOptions: ["12GB"] },
-  "86798311": { brand: "Vivo", model: "V29 Pro", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Dreamy Purple", "Himalayan Blue"], storageOptions: ["256GB"], ramOptions: ["12GB"] },
-
-  // ── ASUS ROG / Zenfone ────────────────────────────────────
-  "35848911": { brand: "ASUS", model: "ROG Phone 8 Pro", year: 2024, category: "gaming", confidence: "high", source: "GSMA TAC", possibleColors: ["Phantom Black", "Storm White"], storageOptions: ["256GB", "512GB", "1TB"], ramOptions: ["16GB", "24GB"] },
-  "35848811": { brand: "ASUS", model: "ROG Phone 7 Ultimate", year: 2023, category: "gaming", confidence: "high", source: "GSMA TAC", possibleColors: ["Storm White"], storageOptions: ["512GB"], ramOptions: ["16GB"] },
-  "35848711": { brand: "ASUS", model: "Zenfone 10", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Midnight Black", "Aurora Green", "Starry Blue", "Eclipse Red", "Comet White"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["8GB", "16GB"] },
-
-  // ── Google Pixel ──────────────────────────────────────────
-  "35848611": { brand: "Google", model: "Pixel 8 Pro", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Obsidian", "Porcelain", "Bay"], storageOptions: ["128GB", "256GB", "1TB"], ramOptions: ["12GB"] },
-  "35848511": { brand: "Google", model: "Pixel 8", year: 2023, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Obsidian", "Hazel", "Rose"], storageOptions: ["128GB", "256GB"], ramOptions: ["8GB"] },
-  "35848411": { brand: "Google", model: "Pixel 7 Pro", year: 2022, category: "smartphone", confidence: "high", source: "GSMA TAC", possibleColors: ["Obsidian", "Snow", "Hazel"], storageOptions: ["128GB", "256GB", "512GB"], ramOptions: ["12GB"] },
-};
-
-// ─── Helpers ──────────────────────────────────────────────────
-function extractTac(imei: string): string {
-  return imei.substring(0, 8);
+// ─── Luhn Validation ──────────────────────────────────────────
+function luhnCheck(imei: string): boolean {
+  const digits = imei.split("").map(Number);
+  let sum = 0;
+  for (let i = 0; i < 14; i++) {
+    let d = digits[i];
+    if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; }
+    sum += d;
+  }
+  return (10 - (sum % 10)) % 10 === digits[14];
 }
 
-/** Fuzzy fallback: try prefix matches for partial TAC coverage */
-function lookupByTac(tac: string): DeviceInfo | null {
-  // Exact match first
-  if (TAC_DB[tac]) return TAC_DB[tac];
+// ─── API Keys from Environment ────────────────────────────────
+function getEnv(key: string, fallback = ""): string {
+  return Deno.env.get(key) ?? fallback;
+}
 
-  // Try 7-digit prefix (some TAC ranges share first 7 digits)
-  const prefix7 = tac.substring(0, 7);
-  const match7 = Object.entries(TAC_DB).find(([k]) => k.startsWith(prefix7));
-  if (match7) {
+// ─── Primary: imei.org (Dhru API) ─────────────────────────────
+async function fetchImeiOrg(imei: string): Promise<Record<string, unknown> | null> {
+  const apiKey = getEnv("IMEI_ORG_KEY");
+  if (!apiKey) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    const res = await fetch("https://api-client.imei.org/api/dhru", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "getservicedetails",
+        clientid: apiKey,
+        imei: imei,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.error || data?.status === "error") return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Fallback: imei.info ──────────────────────────────────────
+async function fetchImeiInfo(imei: string): Promise<Record<string, unknown> | null> {
+  const apiKey = getEnv("IMEI_INFO_KEY");
+  if (!apiKey) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    const res = await fetch(`https://api.imei.info/api/check/${imei}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Accept": "application/json",
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Apple Chain: ifreeicloud.co.uk ───────────────────────────
+async function fetchAppleStatus(imei: string): Promise<Record<string, unknown> | null> {
+  const username = getEnv("IFREEICLOUD_USERNAME", "fadlynoiz");
+  const apiKey = getEnv("IFREEICLOUD_KEY");
+  if (!apiKey) return null;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000); // Apple checks can be slow
+
+    const res = await fetch("https://api.ifreeicloud.co.uk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "order",
+        username: username,
+        apiaccesskey: apiKey,
+        imei: imei,
+        service: "fmi_check", // Find My iPhone check
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.error) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Parse brand/model from various API responses ─────────────
+function extractBrandModel(data: Record<string, unknown>): { brand: string; model: string } {
+  // Try common field names across APIs
+  const brand = String(
+    data.brand ?? data.manufacturer ?? data.device_brand ?? data.Brand ?? "Unknown"
+  ).trim();
+  const model = String(
+    data.model ?? data.model_name ?? data.device_model ?? data.Model ?? data.marketing_name ?? "Unknown"
+  ).trim();
+  return { brand, model };
+}
+
+function isAppleBrand(brand: string): boolean {
+  const lower = brand.toLowerCase();
+  return lower.includes("apple") || lower.includes("iphone") || lower.includes("ipad");
+}
+
+// ─── TAC Fallback Database (subset for offline) ───────────────
+// Used only when ALL APIs fail
+const TAC_FALLBACK: Record<string, { brand: string; model: string }> = {
+  "35299511": { brand: "Apple", model: "iPhone 15 Pro Max" },
+  "35299411": { brand: "Apple", model: "iPhone 15 Pro" },
+  "35299211": { brand: "Apple", model: "iPhone 15" },
+  "35851511": { brand: "Samsung", model: "Galaxy S24 Ultra" },
+  "35851211": { brand: "Samsung", model: "Galaxy S23 Ultra" },
+  "86799911": { brand: "Xiaomi", model: "Xiaomi 14" },
+  "86799511": { brand: "Redmi", model: "Redmi Note 13 Pro+" },
+};
+
+// ─── Main Orchestrator ────────────────────────────────────────
+async function lookupImei(imei: string): Promise<UnifiedResponse> {
+  const tac = imei.substring(0, 8);
+
+  // Step 1: Try primary API (imei.org)
+  const primaryData = await fetchImeiOrg(imei);
+
+  if (primaryData) {
+    const { brand, model } = extractBrandModel(primaryData);
+    const isApple = isAppleBrand(brand);
+
+    let appleStatus: Record<string, unknown> | null = null;
+
+    // Step 2: If Apple, chain to ifreeicloud
+    if (isApple) {
+      appleStatus = await fetchAppleStatus(imei);
+    }
+
     return {
-      ...match7[1],
-      confidence: "medium",
-      notes: "Estimasi berdasarkan prefix TAC — model spesifik mungkin berbeda.",
+      success: true,
+      is_apple: isApple,
+      brand,
+      model,
+      imei,
+      tac,
+      details: primaryData,
+      ...(appleStatus ? { apple_icloud_status: appleStatus } : {}),
+      source: "imei.org",
     };
   }
 
-  return null;
+  // Step 3: Fallback to imei.info
+  const fallbackData = await fetchImeiInfo(imei);
+
+  if (fallbackData) {
+    const { brand, model } = extractBrandModel(fallbackData);
+    const isApple = isAppleBrand(brand);
+
+    let appleStatus: Record<string, unknown> | null = null;
+    if (isApple) {
+      appleStatus = await fetchAppleStatus(imei);
+    }
+
+    return {
+      success: true,
+      is_apple: isApple,
+      brand,
+      model,
+      imei,
+      tac,
+      details: fallbackData,
+      ...(appleStatus ? { apple_icloud_status: appleStatus } : {}),
+      source: "imei.info",
+    };
+  }
+
+  // Step 4: Last resort — local TAC database
+  const tacEntry = TAC_FALLBACK[tac];
+  if (tacEntry) {
+    const isApple = isAppleBrand(tacEntry.brand);
+    return {
+      success: true,
+      is_apple: isApple,
+      brand: tacEntry.brand,
+      model: tacEntry.model,
+      imei,
+      tac,
+      details: { source: "local_tac_db" },
+      source: "local_tac",
+      notes: "Data dari database lokal (API tidak tersedia). Informasi mungkin terbatas.",
+    };
+  }
+
+  // All failed
+  return {
+    success: false,
+    is_apple: false,
+    brand: "Tidak Diketahui",
+    model: `TAC: ${tac}`,
+    imei,
+    tac,
+    details: {},
+    source: "none",
+    notes: "Semua sumber data gagal. Cek manual di imei.kemenperin.go.id.",
+  };
 }
 
-// ─── Deno HTTP server ─────────────────────────────────────────
+// ─── Deno HTTP Server ─────────────────────────────────────────
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
@@ -157,24 +277,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const tac = extractTac(body.imei);
-    const device = lookupByTac(tac);
-
-    if (!device) {
-      // Return a generic unknown response — frontend handles null device gracefully
+    if (!luhnCheck(body.imei)) {
       return new Response(
-        JSON.stringify({
-          brand: "Tidak Diketahui",
-          model: `TAC: ${tac}`,
-          confidence: "low",
-          source: "TAC DB",
-          notes: `TAC ${tac} tidak ditemukan di database kami. Cek manual di imei.kemenperin.go.id atau situs resmi produsen.`,
-        } satisfies DeviceInfo),
-        { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "IMEI tidak valid (gagal Luhn check)" }),
+        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(JSON.stringify(device), {
+    const result = await lookupImei(body.imei);
+
+    return new Response(JSON.stringify(result), {
       status: 200,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });

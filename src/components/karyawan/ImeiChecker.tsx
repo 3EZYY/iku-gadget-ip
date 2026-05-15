@@ -9,16 +9,23 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DeviceInfo {
+  success?: boolean;
+  is_apple?: boolean;
   brand: string;
   model: string;
+  imei?: string;
+  tac?: string;
+  details?: Record<string, unknown>;
+  apple_icloud_status?: Record<string, unknown>;
+  source?: string;
+  notes?: string;
+  // Legacy fields (from old TAC-only response)
   year?: number;
   possibleColors?: string[];
   storageOptions?: string[];
   ramOptions?: string[];
   category?: string;
   confidence?: "high" | "medium" | "low";
-  source?: string;
-  notes?: string;
 }
 
 interface ImeiResult {
@@ -281,6 +288,31 @@ const ImeiChecker = () => {
                         TAC hanya menunjukkan model — <span className="font-semibold text-foreground">warna spesifik unit</span> tidak bisa diketahui dari IMEI. Daftar di atas adalah varian resmi yang tersedia. Untuk konfirmasi: cek fisik atau sistem (Settings → About).
                       </p>
                     </div>
+
+                    {/* Apple iCloud Status — only shown for Apple devices */}
+                    {result.device.is_apple && result.device.apple_icloud_status && (
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="w-4 h-4 text-primary" />
+                          <p className="text-sm font-semibold text-card-foreground">Apple Status (iCloud/FMI)</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {Object.entries(result.device.apple_icloud_status).map(([key, val]) => (
+                            <div key={key} className="rounded bg-muted/50 p-2">
+                              <p className="text-muted-foreground capitalize">{key.replace(/_/g, " ")}</p>
+                              <p className="font-semibold text-card-foreground">{String(val)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Source info */}
+                    {result.device.source && (
+                      <p className="text-[10px] text-muted-foreground text-right">
+                        Sumber: {result.device.source}
+                      </p>
+                    )}
                   </div>
                 ) : null}
               </div>

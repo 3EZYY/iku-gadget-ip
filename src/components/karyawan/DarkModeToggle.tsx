@@ -36,7 +36,11 @@ const DarkModeToggle = () => {
       onClick={() => setDark(!dark)}
       className="rounded-full"
     >
-      {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+      {dark ? (
+        <Sun className="w-4 h-4 text-white" />
+      ) : (
+        <Moon className="w-4 h-4 text-black" />
+      )}
     </Button>
   );
 };

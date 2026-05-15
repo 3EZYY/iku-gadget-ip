@@ -29,15 +29,15 @@ export default function LandingDarkModeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200 hover:scale-105"
       style={{
-        background: isDark ? "hsl(222 35% 14%)" : "hsl(0 0% 95%)",
-        border: `1px solid ${isDark ? "hsl(215 30% 20%)" : "hsl(220 10% 85%)"}`,
+        background: isDark ? "hsl(0 0% 15%)" : "hsl(0 0% 95%)",
+        border: `1px solid ${isDark ? "hsl(0 0% 25%)" : "hsl(0 0% 85%)"}`,
       }}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? (
-        <Sun className="h-4 w-4" style={{ color: "hsl(28 90% 55%)" }} />
+        <Sun className="h-4 w-4 text-white" />
       ) : (
-        <Moon className="h-4 w-4" style={{ color: "hsl(222 47% 30%)" }} />
+        <Moon className="h-4 w-4 text-black" />
       )}
     </button>
   );
