@@ -79,7 +79,7 @@ src/App.tsx                        ← routing + RoleGuard
 - ✅ SEO & Open Graph: `index.html` lengkap — title, description, og:*, twitter:card, theme-color, canonical, semantic HTML (`<header>/<main>/<footer>`)
 - ⚠️ Edge Functions perlu di-deploy ke Supabase: `supabase functions deploy predict-price --no-verify-jwt && supabase functions deploy lookup-imei --no-verify-jwt`
 - ⚠️ OG image masih `/placeholder.svg` — ganti dengan gambar 1200×630 nyata sebelum launch
-- ⚠️ Canonical URL masih `https://ikugadget.com/` — update sesuai domain produksi
+- ⚠️ Canonical URL diupdate ke `https://www.iku-gadget.com/`
 - ⏳ M-08: QA semua role, RLS audit, mobile responsiveness — belum dimulai
 - ✅ Semua deprecated files dihapus: `OwnerDashboard.tsx`, `AdminDashboard.tsx`, `Dashboard.tsx`, `LoginScreen.tsx`, `SellerManagement.tsx`, folder `karyawan/ui/` (49 file)
 - ⚠️ Tab "AI Prediksi" dan "Cek IMEI" butuh Edge Function yang belum di-deploy
@@ -124,6 +124,7 @@ Proyek ini dimulai dari Project B yang sudah ada (Vite + React + Supabase) denga
 30. **Full Monochrome Design System** — Hijau dihapus dari seluruh app (bukan hanya landing). `index.css`: `--primary` global diubah ke monochrome (light: hitam `0 0% 9%`, dark: putih `0 0% 96%`). Semua background dari blue-tinted ke pure black/white. Glow effects, border-gradient, surface layers semua monochrome. Landing page `.landing-theme` diupdate: gold → `--lp-accent` (hitam/putih). `tailwind.config.ts`: `bg-surface`/`bg-elevated` ke pure grayscale. Warna tersisa: destructive (merah) dan accent-orange (warning saja).
 31. **Dynamic Profit-Sharing per Seller** — Migration `20260515000001`: `profiles.komisi_persen` (default 50%), `journal.komisi_persen_applied` + `journal.nominal_komisi`, backfill data lama. `UserManagement.tsx`: `CommissionEditor` dropdown 30-70% per karyawan. `JournalForm.tsx`: fetch komisi dari profile, preview dinamis, submit menyimpan applied % + nominal. `TargetProgress.tsx`: pakai `nominal_komisi` jika tersedia, fallback 50%.
 32. **Pemisahan Alur Barang Masuk / Keluar** — Migration `20260515000002`: RLS karyawan INSERT products + RPC `deduct_product_stock`. `FormBarangMasuk.tsx`: form catat kulakan (Merk/Model/Kondisi/Storage/RAM/Harga Beli/Harga Jual rencana → insert products stok=1). `JournalForm.tsx`: "Nama Unit" diganti Select dari products stok>0, auto-fill Harga Beli (read-only), submit → insert journal + deduct stock via RPC. `KaryawanDashboard.tsx`: tombol "Catat Barang Masuk" di tab Transaksi.
+33. **JournalForm Transaction Type Toggle** — `JournalForm.tsx`: segmented control "Catat Penjualan" / "Catat Pembelian". Penjualan: product selector dari stok, Harga Beli read-only, Harga Jual editable, profit preview + komisi, stock deduction. Pembelian: input Nama Unit manual, Harga Beli saja (Harga Jual=0), preview "Total Pengeluaran" (minus). Conditional rendering — payload DB tetap sama.
 
 ---
 

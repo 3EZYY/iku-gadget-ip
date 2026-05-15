@@ -47,6 +47,7 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
   const [loading, setLoading] = useState(false);
   const [komisiPersen, setKomisiPersen] = useState(50);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [txType, setTxType] = useState<"jual" | "beli">("jual");
   const { data: products = [] } = useProducts();
   const availableProducts = products.filter((p) => p.stok > 0);
   const [form, setForm] = useState({
@@ -138,6 +139,42 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
 
   const formContent = (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Transaction Type Toggle */}
+      {!editData && (
+        <div className="flex rounded-lg border border-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => {
+              setTxType("jual");
+              setForm((f) => ({ ...f, harga_beli: "", harga_jual: "" }));
+              setSelectedProductId(null);
+            }}
+            className={`flex-1 py-2 text-xs font-semibold transition-colors ${
+              txType === "jual"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Catat Penjualan
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTxType("beli");
+              setForm((f) => ({ ...f, harga_jual: "", harga_beli: "" }));
+              setSelectedProductId(null);
+            }}
+            className={`flex-1 py-2 text-xs font-semibold transition-colors ${
+              txType === "beli"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Catat Pembelian
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Tanggal</Label>
@@ -161,67 +198,91 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Nama Unit (dari stok)</Label>
-          <Select
-            value={form.nama_unit}
-            onValueChange={(v) => {
-              const product = availableProducts.find((p) => p.nama === v);
-              setForm({
-                ...form,
-                nama_unit: v,
-                harga_beli: product ? Number(product.harga_beli).toLocaleString("id-ID") : form.harga_beli,
-                harga_jual: product ? Number(product.harga_jual).toLocaleString("id-ID") : form.harga_jual,
-              });
-              setSelectedProductId(product?.id ?? null);
-            }}
-          >
-            <SelectTrigger><SelectValue placeholder="Pilih produk dari stok" /></SelectTrigger>
-            <SelectContent>
-              {availableProducts.length === 0 ? (
-                <SelectItem value="__empty" disabled>Tidak ada stok tersedia</SelectItem>
-              ) : (
-                availableProducts.map((p) => (
-                  <SelectItem key={p.id} value={p.nama}>
-                    {p.nama} — Rp {Number(p.harga_beli).toLocaleString("id-ID")}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          {txType === "jual" ? (
+            <>
+              <Label>Nama Unit (dari stok)</Label>
+              <Select
+                value={form.nama_unit}
+                onValueChange={(v) => {
+                  const product = availableProducts.find((p) => p.nama === v);
+                  setForm({
+                    ...form,
+                    nama_unit: v,
+                    harga_beli: product ? Number(product.harga_beli).toLocaleString("id-ID") : form.harga_beli,
+                    harga_jual: product ? Number(product.harga_jual).toLocaleString("id-ID") : form.harga_jual,
+                  });
+                  setSelectedProductId(product?.id ?? null);
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Pilih produk dari stok" /></SelectTrigger>
+                <SelectContent>
+                  {availableProducts.length === 0 ? (
+                    <SelectItem value="__empty" disabled>Tidak ada stok tersedia</SelectItem>
+                  ) : (
+                    availableProducts.map((p) => (
+                      <SelectItem key={p.id} value={p.nama}>
+                        {p.nama} — Rp {Number(p.harga_beli).toLocaleString("id-ID")}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </>
+          ) : (
+            <>
+              <Label>Nama Unit</Label>
+              <Input value={form.nama_unit} onChange={(e) => setForm({ ...form, nama_unit: e.target.value })} placeholder="Nama/model unit" required />
+            </>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Harga Jual</Label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={form.harga_jual}
-              onChange={(e) => setForm({ ...form, harga_jual: formatThousands(e.target.value) })}
-              placeholder="0"
-              className="pl-8 font-mono"
-              required
-            />
+
+      {/* Conditional price fields */}
+      <div className="space-y-4">
+        {txType === "jual" && (
+          <div className="space-y-2">
+            <Label>Harga Jual</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={form.harga_jual}
+                onChange={(e) => setForm({ ...form, harga_jual: formatThousands(e.target.value) })}
+                placeholder="0"
+                className="pl-8 font-mono"
+                required
+              />
+            </div>
+            {/* Show modal (harga beli) as info text, not editable input */}
+            {selectedProductId && form.harga_beli && (
+              <p className="text-xs text-muted-foreground">
+                Modal: Rp {form.harga_beli} (dari stok, otomatis)
+              </p>
+            )}
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label>Harga Beli {selectedProductId && "(dari stok)"}</Label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={form.harga_beli}
-              onChange={(e) => { if (!selectedProductId) setForm({ ...form, harga_beli: formatThousands(e.target.value) }); }}
-              placeholder="0"
-              className="pl-8 font-mono"
-              readOnly={!!selectedProductId}
-              required
-            />
+        )}
+        {txType === "beli" && (
+          <div className="space-y-2">
+            <Label>Harga Beli (Modal)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">Rp</span>
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={form.harga_beli}
+                onChange={(e) => setForm({ ...form, harga_beli: formatThousands(e.target.value), harga_jual: "" })}
+                placeholder="0"
+                className="pl-8 font-mono"
+                required
+              />
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Biaya Operasional — always visible */}
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Biaya Operasional</Label>
           <div className="relative">
@@ -236,20 +297,30 @@ export default function JournalForm({ onSuccess, editData, open, onOpenChange }:
             />
           </div>
         </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Keterangan Biaya Operasional</Label>
-        <Input value={form.keterangan_biaya} onChange={(e) => setForm({ ...form, keterangan_biaya: e.target.value })} placeholder="Karena apa? (opsional)" />
+        <div className="space-y-2">
+          <Label>Keterangan Biaya</Label>
+          <Input value={form.keterangan_biaya} onChange={(e) => setForm({ ...form, keterangan_biaya: e.target.value })} placeholder="Opsional" />
+        </div>
       </div>
 
+      {/* Profit preview */}
       <div className="rounded-lg bg-accent p-3 space-y-1 text-sm">
-        <div className="flex justify-between"><span className="text-muted-foreground">Profit:</span> <span className="font-semibold">Rp {profit.toLocaleString("id-ID")}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Profit Seller ({komisiPersen}%):</span> <span>Rp {profitSeller.toLocaleString("id-ID")}</span></div>
-        <div className="flex justify-between"><span className="text-muted-foreground">Profit Toko ({100 - komisiPersen}%):</span> <span>Rp {profitToko.toLocaleString("id-ID")}</span></div>
+        {txType === "jual" ? (
+          <>
+            <div className="flex justify-between"><span className="text-muted-foreground">Profit:</span> <span className="font-semibold">Rp {profit.toLocaleString("id-ID")}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Profit Seller ({komisiPersen}%):</span> <span>Rp {profitSeller.toLocaleString("id-ID")}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Profit Toko ({100 - komisiPersen}%):</span> <span>Rp {profitToko.toLocaleString("id-ID")}</span></div>
+          </>
+        ) : (
+          <>
+            <div className="flex justify-between"><span className="text-muted-foreground">Total Pengeluaran:</span> <span className="font-semibold text-destructive">-Rp {(Number(parseFormatted(form.harga_beli)) + Number(parseFormatted(form.biaya_operasional))).toLocaleString("id-ID")}</span></div>
+            <p className="text-[10px] text-muted-foreground mt-1">Pembelian dicatat sebagai pengeluaran. Profit dihitung saat barang terjual.</p>
+          </>
+        )}
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Menyimpan..." : editData ? "Perbarui" : "Tambah"}
+        {loading ? "Menyimpan..." : editData ? "Perbarui" : txType === "jual" ? "Catat Penjualan" : "Catat Pembelian"}
       </Button>
     </form>
   );
