@@ -19,6 +19,8 @@ interface DeviceInfo {
   apple_icloud_status?: Record<string, unknown>;
   source?: string;
   notes?: string;
+  _debug_primary?: string;
+  _debug_fallback?: string;
   // Legacy fields (from old TAC-only response)
   year?: number;
   possibleColors?: string[];
@@ -93,7 +95,24 @@ const ImeiChecker = () => {
       const { data, error } = await supabase.functions.invoke("lookup-imei", { body: { imei: clean } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setResult({ ...baseResult, device: data });
+
+      // If API returned success: false with debug info, still show it
+      if (data?.success === false && data?.details) {
+        setResult({
+          ...baseResult,
+          device: {
+            brand: data.brand || "Tidak Diketahui",
+            model: data.model || "",
+            source: data.source,
+            notes: data.notes,
+            // Expose raw errors for debugging
+            _debug_primary: data.details?.error_primary,
+            _debug_fallback: data.details?.error_fallback,
+          } as DeviceInfo,
+        });
+      } else {
+        setResult({ ...baseResult, device: data });
+      }
     } catch (e) {
       toast.error("Gagal lookup perangkat", { description: (e as Error).message });
     } finally {
@@ -222,6 +241,29 @@ const ImeiChecker = () => {
                       <p className="text-xs text-muted-foreground italic border-l-2 border-primary/40 pl-2">
                         {result.device.notes}
                       </p>
+                    )}
+
+                    {/* Debug: raw API errors (only shown when lookup failed) */}
+                    {(result.device._debug_primary || result.device._debug_fallback) && (
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2 text-xs">
+                        <p className="font-semibold text-destructive">⚠️ Debug: API Errors</p>
+                        {result.device._debug_primary && (
+                          <div>
+                            <p className="text-muted-foreground">Primary (imei.org):</p>
+                            <code className="block mt-0.5 p-1.5 rounded bg-muted text-[10px] font-mono break-all">
+                              {result.device._debug_primary}
+                            </code>
+                          </div>
+                        )}
+                        {result.device._debug_fallback && (
+                          <div>
+                            <p className="text-muted-foreground">Fallback (imei.info):</p>
+                            <code className="block mt-0.5 p-1.5 rounded bg-muted text-[10px] font-mono break-all">
+                              {result.device._debug_fallback}
+                            </code>
+                          </div>
+                        )}
+                      </div>
                     )}
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">

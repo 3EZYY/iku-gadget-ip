@@ -52,7 +52,7 @@ async function fetchImeiOrg(imei: string): Promise<Record<string, unknown> | nul
 
   if (!apiKey || !username) {
     console.log("[imei.org] Skipped — IMEI_ORG_KEY or IMEI_ORG_USERNAME not set");
-    return null;
+    return { __error: "IMEI_ORG_KEY or IMEI_ORG_USERNAME not configured in Supabase secrets" };
   }
 
   try {
@@ -102,7 +102,7 @@ async function fetchImeiOrg(imei: string): Promise<Record<string, unknown> | nul
     return data;
   } catch (err) {
     console.error("[imei.org] Failed:", (err as Error).message);
-    return null;
+    return { __error: (err as Error).message };
   }
 }
 
@@ -112,7 +112,7 @@ async function fetchImeiInfo(imei: string): Promise<Record<string, unknown> | nu
 
   if (!apiKey) {
     console.log("[imei.info] Skipped — IMEI_INFO_KEY not set");
-    return null;
+    return { __error: "IMEI_INFO_KEY not configured in Supabase secrets" };
   }
 
   try {
@@ -153,7 +153,7 @@ async function fetchImeiInfo(imei: string): Promise<Record<string, unknown> | nu
     return data;
   } catch (err) {
     console.error("[imei.info] Failed:", (err as Error).message);
-    return null;
+    return { __error: (err as Error).message };
   }
 }
 
@@ -259,13 +259,15 @@ const TAC_FALLBACK: Record<string, { brand: string; model: string }> = {
 // ─── Main Orchestrator ────────────────────────────────────────
 async function lookupImei(imei: string): Promise<UnifiedResponse> {
   const tac = imei.substring(0, 8);
+  let errorPrimary = "";
+  let errorFallback = "";
 
   console.log("=== IMEI Lookup Start ===", imei, "TAC:", tac);
 
   // Step 1: Try primary API (imei.org)
   const primaryData = await fetchImeiOrg(imei);
 
-  if (primaryData) {
+  if (primaryData && !primaryData.__error) {
     const { brand, model } = extractBrandModel(primaryData);
     const isApple = isAppleBrand(brand);
 
@@ -288,10 +290,16 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     };
   }
 
+  if (primaryData?.__error) {
+    errorPrimary = String(primaryData.__error);
+  } else {
+    errorPrimary = "No response or connection failed";
+  }
+
   // Step 2: Fallback to imei.info
   const fallbackData = await fetchImeiInfo(imei);
 
-  if (fallbackData) {
+  if (fallbackData && !fallbackData.__error) {
     const { brand, model } = extractBrandModel(fallbackData);
     const isApple = isAppleBrand(brand);
 
@@ -314,6 +322,12 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     };
   }
 
+  if (fallbackData?.__error) {
+    errorFallback = String(fallbackData.__error);
+  } else {
+    errorFallback = "No response or connection failed";
+  }
+
   // Step 3: Last resort — local TAC database
   const tacEntry = TAC_FALLBACK[tac];
   if (tacEntry) {
@@ -332,8 +346,11 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     };
   }
 
-  // All failed
+  // All failed — return errors for debugging
   console.log("=== Result: ALL SOURCES FAILED ===");
+  console.log("Primary error:", errorPrimary);
+  console.log("Fallback error:", errorFallback);
+
   return {
     success: false,
     is_apple: false,
@@ -341,7 +358,10 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     model: `TAC: ${tac}`,
     imei,
     tac,
-    details: {},
+    details: {
+      error_primary: errorPrimary,
+      error_fallback: errorFallback,
+    },
     source: "none",
     notes: "Semua sumber data gagal. Cek manual di imei.kemenperin.go.id.",
   };
