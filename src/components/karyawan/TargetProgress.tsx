@@ -97,9 +97,14 @@ export default function TargetProgress({ entries }: TargetProgressProps) {
     0
   );
   const sellerShare = monthEntries.reduce(
-    (s, e) => s + (typeof (e as Record<string, unknown>)["nominal_komisi"] === "number"
-      ? Number((e as Record<string, unknown>)["nominal_komisi"])
-      : (Number(e.harga_jual) - Number(e.harga_beli) - Number(e.biaya_operasional)) * 0.5),
+    (s, e) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const row = e as any;
+      if (typeof row.nominal_komisi === "number") {
+        return s + Number(row.nominal_komisi);
+      }
+      return s + (Number(e.harga_jual) - Number(e.harga_beli) - Number(e.biaya_operasional)) * 0.5;
+    },
     0
   );
   const estimatedBonus = achieved

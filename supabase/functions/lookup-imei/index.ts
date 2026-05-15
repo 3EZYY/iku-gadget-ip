@@ -1,8 +1,8 @@
 // supabase/functions/lookup-imei/index.ts
-// Smart IMEI Lookup — API Router with fallback
-// Primary: imei.org | Apple chain: ifreeicloud.co.uk | Fallback: imei.info
+// Smart IMEI Lookup — API Router with fallback + logging
+// Primary: imei.org (Dhru) | Apple chain: ifreeicloud.co.uk | Fallback: imei.info
 // Deploy: supabase functions deploy lookup-imei --no-verify-jwt
-// Secrets: supabase secrets set IMEI_ORG_KEY=xxx IMEI_INFO_KEY=xxx IFREEICLOUD_KEY=xxx
+// Secrets: supabase secrets set IMEI_ORG_KEY=xxx IMEI_INFO_KEY=xxx IFREEICLOUD_KEY=xxx IMEI_ORG_USERNAME=xxx
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -40,38 +40,68 @@ function luhnCheck(imei: string): boolean {
   return (10 - (sum % 10)) % 10 === digits[14];
 }
 
-// ─── API Keys from Environment ────────────────────────────────
+// ─── Environment ─────────────────────────────────────────────
 function getEnv(key: string, fallback = ""): string {
   return Deno.env.get(key) ?? fallback;
 }
 
-// ─── Primary: imei.org (Dhru API) ─────────────────────────────
+// ─── Primary: imei.org (Dhru Fusion API) ──────────────────────
 async function fetchImeiOrg(imei: string): Promise<Record<string, unknown> | null> {
+  const username = getEnv("IMEI_ORG_USERNAME");
   const apiKey = getEnv("IMEI_ORG_KEY");
-  if (!apiKey) return null;
+
+  if (!apiKey || !username) {
+    console.log("[imei.org] Skipped — IMEI_ORG_KEY or IMEI_ORG_USERNAME not set");
+    return null;
+  }
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    // Dhru Fusion API format
+    const payload = {
+      username: username,
+      apiaccesskey: apiKey,
+      action: "imeimakemodel",
+      parameters: {
+        imei: imei,
+      },
+    };
+
+    console.log("[imei.org] Requesting with action: imeimakemodel, IMEI:", imei);
 
     const res = await fetch("https://api-client.imei.org/api/dhru", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "getservicedetails",
-        clientid: apiKey,
-        imei: imei,
-      }),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
     clearTimeout(timeout);
 
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data?.error || data?.status === "error") return null;
+    console.log("[imei.org] HTTP Status:", res.status);
+
+    const rawText = await res.text();
+    console.log("[imei.org] Raw Response:", rawText.substring(0, 500));
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${rawText.substring(0, 200)}`);
+    }
+
+    const data = JSON.parse(rawText);
+
+    // Check for internal API errors
+    if (data?.error || data?.status === "error" || data?.success === false || data?.ERROR) {
+      const errMsg = data.error || data.ERROR || data.message || "Unknown API error";
+      console.log("[imei.org] API returned error:", errMsg);
+      throw new Error(errMsg);
+    }
+
+    console.log("[imei.org] Success — brand:", data.brand || data.Brand || "?");
     return data;
-  } catch {
+  } catch (err) {
+    console.error("[imei.org] Failed:", (err as Error).message);
     return null;
   }
 }
@@ -79,11 +109,17 @@ async function fetchImeiOrg(imei: string): Promise<Record<string, unknown> | nul
 // ─── Fallback: imei.info ──────────────────────────────────────
 async function fetchImeiInfo(imei: string): Promise<Record<string, unknown> | null> {
   const apiKey = getEnv("IMEI_INFO_KEY");
-  if (!apiKey) return null;
+
+  if (!apiKey) {
+    console.log("[imei.info] Skipped — IMEI_INFO_KEY not set");
+    return null;
+  }
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
+    console.log("[imei.info] Requesting IMEI:", imei);
 
     const res = await fetch(`https://api.imei.info/api/check/${imei}`, {
       method: "GET",
@@ -96,56 +132,99 @@ async function fetchImeiInfo(imei: string): Promise<Record<string, unknown> | nu
 
     clearTimeout(timeout);
 
-    if (!res.ok) return null;
-    const data = await res.json();
+    console.log("[imei.info] HTTP Status:", res.status);
+
+    const rawText = await res.text();
+    console.log("[imei.info] Raw Response:", rawText.substring(0, 500));
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${rawText.substring(0, 200)}`);
+    }
+
+    const data = JSON.parse(rawText);
+
+    if (data?.error || data?.success === false) {
+      const errMsg = data.error || data.message || "Unknown error";
+      console.log("[imei.info] API returned error:", errMsg);
+      throw new Error(errMsg);
+    }
+
+    console.log("[imei.info] Success — brand:", data.brand || data.Brand || "?");
     return data;
-  } catch {
+  } catch (err) {
+    console.error("[imei.info] Failed:", (err as Error).message);
     return null;
   }
 }
 
-// ─── Apple Chain: ifreeicloud.co.uk ───────────────────────────
+// ─── Apple Chain: ifreeicloud.co.uk (Dhru format) ─────────────
 async function fetchAppleStatus(imei: string): Promise<Record<string, unknown> | null> {
   const username = getEnv("IFREEICLOUD_USERNAME", "fadlynoiz");
   const apiKey = getEnv("IFREEICLOUD_KEY");
-  if (!apiKey) return null;
+
+  if (!apiKey) {
+    console.log("[ifreeicloud] Skipped — IFREEICLOUD_KEY not set");
+    return null;
+  }
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000); // Apple checks can be slow
+    const timeout = setTimeout(() => controller.abort(), 20000); // Apple checks can be slow
+
+    // Dhru Fusion format for ifreeicloud
+    const payload = {
+      username: username,
+      apiaccesskey: apiKey,
+      action: "order",
+      parameters: {
+        imei: imei,
+        service: "fmi_check",
+      },
+    };
+
+    console.log("[ifreeicloud] Requesting FMI check for IMEI:", imei);
 
     const res = await fetch("https://api.ifreeicloud.co.uk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "order",
-        username: username,
-        apiaccesskey: apiKey,
-        imei: imei,
-        service: "fmi_check", // Find My iPhone check
-      }),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 
     clearTimeout(timeout);
 
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data?.error) return null;
+    console.log("[ifreeicloud] HTTP Status:", res.status);
+
+    const rawText = await res.text();
+    console.log("[ifreeicloud] Raw Response:", rawText.substring(0, 500));
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${rawText.substring(0, 200)}`);
+    }
+
+    const data = JSON.parse(rawText);
+
+    if (data?.error || data?.success === false || data?.ERROR) {
+      const errMsg = data.error || data.ERROR || data.message || "Unknown error";
+      console.log("[ifreeicloud] API returned error:", errMsg);
+      return null; // Don't throw — Apple check is optional
+    }
+
+    console.log("[ifreeicloud] Success");
     return data;
-  } catch {
+  } catch (err) {
+    console.error("[ifreeicloud] Failed:", (err as Error).message);
     return null;
   }
 }
 
 // ─── Parse brand/model from various API responses ─────────────
 function extractBrandModel(data: Record<string, unknown>): { brand: string; model: string } {
-  // Try common field names across APIs
   const brand = String(
-    data.brand ?? data.manufacturer ?? data.device_brand ?? data.Brand ?? "Unknown"
+    data.brand ?? data.Brand ?? data.manufacturer ?? data.device_brand ?? data.BRAND ?? "Unknown"
   ).trim();
   const model = String(
-    data.model ?? data.model_name ?? data.device_model ?? data.Model ?? data.marketing_name ?? "Unknown"
+    data.model ?? data.Model ?? data.model_name ?? data.device_model ?? data.MODEL ?? data.marketing_name ?? "Unknown"
   ).trim();
   return { brand, model };
 }
@@ -156,20 +235,32 @@ function isAppleBrand(brand: string): boolean {
 }
 
 // ─── TAC Fallback Database (subset for offline) ───────────────
-// Used only when ALL APIs fail
 const TAC_FALLBACK: Record<string, { brand: string; model: string }> = {
   "35299511": { brand: "Apple", model: "iPhone 15 Pro Max" },
   "35299411": { brand: "Apple", model: "iPhone 15 Pro" },
+  "35299311": { brand: "Apple", model: "iPhone 15 Plus" },
   "35299211": { brand: "Apple", model: "iPhone 15" },
+  "35299111": { brand: "Apple", model: "iPhone 14 Pro Max" },
+  "35298911": { brand: "Apple", model: "iPhone 14 Pro" },
+  "35298411": { brand: "Apple", model: "iPhone 13" },
+  "35298611": { brand: "Apple", model: "iPhone 13 Pro Max" },
+  "35297511": { brand: "Apple", model: "iPhone 11" },
   "35851511": { brand: "Samsung", model: "Galaxy S24 Ultra" },
   "35851211": { brand: "Samsung", model: "Galaxy S23 Ultra" },
-  "86799911": { brand: "Xiaomi", model: "Xiaomi 14" },
-  "86799511": { brand: "Redmi", model: "Redmi Note 13 Pro+" },
+  "35850811": { brand: "Samsung", model: "Galaxy S22 Ultra" },
+  "35849811": { brand: "Samsung", model: "Galaxy A55" },
+  "86800011": { brand: "Xiaomi", model: "14 Ultra" },
+  "86799911": { brand: "Xiaomi", model: "14" },
+  "86799511": { brand: "Redmi", model: "Note 13 Pro+" },
+  "86799411": { brand: "Redmi", model: "Note 13 Pro" },
+  "86799211": { brand: "POCO", model: "X6 Pro" },
 };
 
 // ─── Main Orchestrator ────────────────────────────────────────
 async function lookupImei(imei: string): Promise<UnifiedResponse> {
   const tac = imei.substring(0, 8);
+
+  console.log("=== IMEI Lookup Start ===", imei, "TAC:", tac);
 
   // Step 1: Try primary API (imei.org)
   const primaryData = await fetchImeiOrg(imei);
@@ -179,12 +270,11 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     const isApple = isAppleBrand(brand);
 
     let appleStatus: Record<string, unknown> | null = null;
-
-    // Step 2: If Apple, chain to ifreeicloud
     if (isApple) {
       appleStatus = await fetchAppleStatus(imei);
     }
 
+    console.log("=== Result: imei.org success ===", brand, model);
     return {
       success: true,
       is_apple: isApple,
@@ -198,7 +288,7 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     };
   }
 
-  // Step 3: Fallback to imei.info
+  // Step 2: Fallback to imei.info
   const fallbackData = await fetchImeiInfo(imei);
 
   if (fallbackData) {
@@ -210,6 +300,7 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
       appleStatus = await fetchAppleStatus(imei);
     }
 
+    console.log("=== Result: imei.info fallback success ===", brand, model);
     return {
       success: true,
       is_apple: isApple,
@@ -223,10 +314,11 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
     };
   }
 
-  // Step 4: Last resort — local TAC database
+  // Step 3: Last resort — local TAC database
   const tacEntry = TAC_FALLBACK[tac];
   if (tacEntry) {
     const isApple = isAppleBrand(tacEntry.brand);
+    console.log("=== Result: local TAC fallback ===", tacEntry.brand, tacEntry.model);
     return {
       success: true,
       is_apple: isApple,
@@ -236,11 +328,12 @@ async function lookupImei(imei: string): Promise<UnifiedResponse> {
       tac,
       details: { source: "local_tac_db" },
       source: "local_tac",
-      notes: "Data dari database lokal (API tidak tersedia). Informasi mungkin terbatas.",
+      notes: "Data dari database lokal (API eksternal tidak tersedia). Informasi mungkin terbatas.",
     };
   }
 
   // All failed
+  console.log("=== Result: ALL SOURCES FAILED ===");
   return {
     success: false,
     is_apple: false,
@@ -292,6 +385,7 @@ Deno.serve(async (req: Request) => {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
+    console.error("[lookup-imei] Unhandled error:", message);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
