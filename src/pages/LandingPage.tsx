@@ -67,8 +67,8 @@ function HeroSection() {
       <div className="relative z-10 container mx-auto px-4 text-center">
         {/* Logo */}
         <div className="animate-fade-in flex justify-center mb-8">
-          <img src={logoLight} alt="Iku Gadget & Stuff" width={220} className="dark:hidden" />
-          <img src={logoDark}  alt="Iku Gadget & Stuff" width={220} className="hidden dark:block" />
+          <img src={logoLight} alt="Iku Gadget & Stuff" className="w-40 md:w-52 lg:w-60 h-auto object-contain dark:hidden" />
+          <img src={logoDark}  alt="Iku Gadget & Stuff" className="w-40 md:w-52 lg:w-60 h-auto object-contain hidden dark:block" />
         </div>
 
         {/* Badge */}
@@ -308,6 +308,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import TestimonialForm from "@/components/landing/TestimonialForm";
+import ChatAssistant from "@/components/landing/ChatAssistant";
 
 interface DbTestimonial {
   id: string;
@@ -700,6 +701,7 @@ export default function LandingPage() {
         <CtaSection />
       </main>
       <LandingFooter />
+      <ChatAssistant />
     </div>
   );
 }

@@ -20,13 +20,14 @@ import UserManagement from "@/components/UserManagement";
 import ProductManagement from "@/components/admin/ProductManagement";
 import TestimonialModeration from "@/components/admin/TestimonialModeration";
 import OwnerPeriodStats from "@/components/owner/OwnerPeriodStats";
+import AiSettings from "@/components/owner/AiSettings";
 import SellerLeaderboard from "@/components/owner/SellerLeaderboard";
 import SellerProfitChart from "@/components/owner/SellerProfitChart";
 import MonthlyTrendChart from "@/components/owner/MonthlyTrendChart";
 import DarkModeToggle from "@/components/karyawan/DarkModeToggle";
 import {
   LogOut, TrendingUp, ShoppingBag, DollarSign,
-  Wallet, Crown, Shield, Users, Settings, Package, BarChart3, MessageSquare,
+  Wallet, Crown, Shield, Users, Settings, Package, BarChart3, MessageSquare, Sparkles,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import logoLight from "@/assets/logo1.png";
@@ -243,6 +244,12 @@ export default function ManagementDashboard() {
               <MessageSquare className="mr-2 h-4 w-4" />
               Moderasi Ulasan
             </TabsTrigger>
+            {isOwner && (
+              <TabsTrigger value="ai-settings">
+                <Sparkles className="mr-2 h-4 w-4" />
+                AI Settings
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ── Tab: Transactions ─────────────────────────────── */}
@@ -318,6 +325,13 @@ export default function ManagementDashboard() {
           <TabsContent value="testimonials" className="space-y-4">
             <TestimonialModeration />
           </TabsContent>
+
+          {/* ── Owner: AI Settings ────────────────────────────── */}
+          {isOwner && (
+            <TabsContent value="ai-settings" className="space-y-4">
+              <AiSettings />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
