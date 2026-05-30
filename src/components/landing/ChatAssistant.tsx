@@ -46,12 +46,21 @@ export default function ChatAssistant() {
 
       if (error) throw error;
 
-      const reply = data?.reply || "Maaf, saya tidak bisa menjawab saat ini.";
-      setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
-    } catch {
+      // Check for structured error from Edge Function
+      if (data?.error) {
+        const errDetail = data.details || data.error;
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", text: `⚠️ [${data.error}] ${errDetail}` },
+        ]);
+      } else {
+        const reply = data?.reply || "Maaf, saya tidak bisa menjawab saat ini.";
+        setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
+      }
+    } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: "Maaf, terjadi kesalahan. Coba lagi nanti atau hubungi tim kami via WhatsApp." },
+        { role: "assistant", text: `❌ Error: ${(err as Error).message || "Koneksi gagal"}` },
       ]);
     } finally {
       setLoading(false);

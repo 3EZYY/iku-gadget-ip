@@ -103,8 +103,8 @@ async function callGemini(apiKey: string, userMessage: string, history: Array<{ 
 
   if (!res.ok) {
     const errText = await res.text();
-    console.error("[Gemini] Error:", res.status, errText.substring(0, 300));
-    throw new Error(`Gemini API error: ${res.status}`);
+    console.error("[Gemini] Error:", res.status, errText.substring(0, 500));
+    throw new Error(`HTTP ${res.status}: ${errText.substring(0, 300)}`);
   }
 
   const data = await res.json();
@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
   }
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 
@@ -131,52 +131,102 @@ Deno.serve(async (req: Request) => {
     };
 
     if (!message || message.trim().length === 0) {
-      return new Response(JSON.stringify({ error: "Pesan tidak boleh kosong" }), {
-        status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: "EMPTY_MESSAGE", details: "Pesan tidak boleh kosong" }), {
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
+
+    // Verify env vars exist
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!supabaseUrl || !serviceKey) {
+      console.error("[ai-assistant] Missing env:", { url: !!supabaseUrl, key: !!serviceKey });
+      return new Response(JSON.stringify({
+        error: "ENV_MISSING",
+        details: `SUPABASE_URL: ${supabaseUrl ? "OK" : "MISSING"}, SERVICE_ROLE_KEY: ${serviceKey ? "OK" : "MISSING"}`,
+      }), {
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    // Create admin client (service role — bypasses ALL RLS)
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
     // Get client IP
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       || req.headers.get("cf-connecting-ip")
       || "unknown";
 
-    // Create admin client (bypasses RLS)
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
-
     // Rate limit check
     const allowed = await checkRateLimit(supabaseAdmin, ip);
     if (!allowed) {
       return new Response(JSON.stringify({
-        error: "Terlalu banyak permintaan. Coba lagi dalam 1 jam.",
+        error: "RATE_LIMITED",
+        details: "Terlalu banyak permintaan. Coba lagi dalam 1 jam.",
         rate_limited: true,
       }), {
-        status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
-    // Get API key from DB
-    const apiKey = await getGeminiKey(supabaseAdmin);
+    // Get API key from DB (using service role — bypasses owner-only RLS)
+    let apiKey: string | null = null;
+    try {
+      const { data, error: dbErr } = await supabaseAdmin
+        .from("site_settings")
+        .select("gemini_api_key")
+        .limit(1)
+        .maybeSingle();
+
+      if (dbErr) {
+        console.error("[ai-assistant] DB error:", dbErr.message);
+        return new Response(JSON.stringify({
+          error: "DB_ERROR",
+          details: dbErr.message,
+        }), {
+          status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        });
+      }
+
+      apiKey = data?.gemini_api_key || null;
+    } catch (dbCatch) {
+      return new Response(JSON.stringify({
+        error: "DB_EXCEPTION",
+        details: (dbCatch as Error).message,
+      }), {
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
     if (!apiKey) {
       return new Response(JSON.stringify({
-        reply: "Maaf, fitur AI belum dikonfigurasi. Hubungi Owner untuk mengaktifkan.",
+        error: "NO_API_KEY",
+        details: "Gemini API Key belum dikonfigurasi di site_settings. Owner harus set via AI Settings.",
       }), {
         status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
     // Call Gemini
-    const reply = await callGemini(apiKey, message.trim(), history);
-
-    return new Response(JSON.stringify({ reply }), {
-      status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
+    try {
+      const reply = await callGemini(apiKey, message.trim(), history);
+      return new Response(JSON.stringify({ reply }), {
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    } catch (geminiErr) {
+      return new Response(JSON.stringify({
+        error: "GEMINI_ERROR",
+        details: (geminiErr as Error).message,
+      }), {
+        status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
   } catch (err) {
-    console.error("[ai-assistant] Error:", (err as Error).message);
+    console.error("[ai-assistant] Fatal:", (err as Error).message);
     return new Response(JSON.stringify({
-      reply: "Maaf, terjadi kesalahan. Silakan coba lagi atau hubungi tim kami via WhatsApp.",
+      error: "FATAL",
+      details: (err as Error).message,
     }), {
       status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
