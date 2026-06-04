@@ -548,3 +548,11 @@ Implemented dynamic user role management for Owners via a secure Supabase RPC (`
 - **Migration:** `supabase/migrations/20260604000003_update_user_role_rpc.sql`
 - **UI:** In `src/components/UserManagement.tsx`, the static role badge for non-owner users is replaced with a shadcn `<Select>` dropdown (admin/karyawan) when the logged-in user is an owner. Owner's own row always shows a static badge.
 - **Mutation:** `useMutation` calls the RPC then invalidates `['user-list']` query on success.
+
+---
+
+## Bugfix: User Management UI & Edge Function
+
+- **Delete UI desync**: Resolved users persisting in the list after deletion. Root cause: `get_user_list` uses a LEFT JOIN so deleted `user_roles` rows leave a null-role profile visible. Fix: added `.filter(u => u.role != null)` to the `user-list` queryFn so null-role rows are stripped immediately after cache invalidation. Also added `pending-users` invalidation to `deleteUser.onSuccess`.
+- **Edge Function 500 on user creation**: Fixed `onConflict: "user_id"` → `"user_id,role"` in the `user_roles` upsert inside `create-internal-user/index.ts`. The table's actual unique constraint is `UNIQUE (user_id, role)` — using the wrong conflict target caused PostgreSQL to reject the statement.
+- **Generic error toasts**: `src/lib/auth.ts` now reads the JSON body from `FunctionsHttpError.context` (the raw `Response`) before falling back to `error.message`, so toasts show the actual reason (e.g. "Password should be at least 6 characters") instead of the SDK's generic "non-2xx status code" message.

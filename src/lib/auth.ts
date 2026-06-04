@@ -63,12 +63,28 @@ export async function createUserWithRole(
   });
 
   if (error) {
-    const errMsg = error.message?.toLowerCase() || "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).status === 429 || errMsg.includes("rate limit") || errMsg.includes("too many requests")) {
+    // FunctionsHttpError carries the raw Response in `.context`. Parse the JSON body
+    // so the toast shows the actual reason (e.g. "Password too short") instead of
+    // the generic "Edge Function returned a non-2xx status code".
+    let actualMessage: string | null = null;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body = await (error as any).context?.json?.();
+      if (body?.error) actualMessage = String(body.error);
+    } catch {
+      // Body unreadable — fall through to generic handling
+    }
+
+    const msg = (actualMessage ?? error.message ?? "").toLowerCase();
+    if (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (error as any).status === 429 ||
+      msg.includes("rate limit") ||
+      msg.includes("too many requests")
+    ) {
       throw new Error("Terlalu banyak percobaan. Harap tunggu beberapa menit sebelum membuat akun baru.");
     }
-    throw error;
+    throw new Error(actualMessage ?? error.message ?? "Gagal membuat akun");
   }
   
   if (data?.error) {

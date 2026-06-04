@@ -294,7 +294,9 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_user_list");
       if (error) throw error;
-      return (data ?? []) as UserRow[];
+      // Filter out null-role rows — these are profiles whose user_roles entry was
+      // deleted (remove_user_role) but whose profiles row still exists via LEFT JOIN.
+      return ((data ?? []) as UserRow[]).filter((u) => u.role != null);
     },
   });
 
@@ -360,6 +362,7 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-list"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-users"] });
       toast.success("Akun berhasil dihapus");
     },
     onError: (err: Error) => {

@@ -81,7 +81,7 @@ Deno.serve(async (req: Request) => {
       .from("user_roles")
       .upsert(
         [{ user_id: user.id, role: role }],
-        { onConflict: "user_id" }
+        { onConflict: "user_id,role" }
       );
 
     if (roleError) {
