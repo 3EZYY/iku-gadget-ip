@@ -519,6 +519,9 @@ RLS `WITH CHECK` tidak bisa pakai `NEW.role`. **Fix:** Ganti dengan `role` langs
 ### Radix UI Warnings & Rate Limits
 **Bugfix:** Resolved persistent Radix UI Dialog warnings across multiple modals. Added graceful UI error handling for Supabase 429 Rate Limit Exceeded during user creation.
 
+### Session Hijacking on Internal User Creation
+**Bugfix:** Resolved session-hijacking on internal user creation by migrating from client-side `auth.signUp` to a dedicated `create-internal-user` Edge Function using the Supabase Admin Auth API.
+
 ---
 
 ## 10. Catatan Penting untuk Sesi Berikutnya

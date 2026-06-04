@@ -58,25 +58,28 @@ export async function createUserWithRole(
   role: AppRole,
   fullName?: string
 ) {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
-        role: role,
-        created_by_admin: "true", // trigger reads this → is_approved = true
-      },
-    },
+  const { data, error } = await supabase.functions.invoke("create-internal-user", {
+    body: { email, password, fullName, role },
   });
+
   if (error) {
+    const errMsg = error.message?.toLowerCase() || "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).status === 429 || error.message.toLowerCase().includes("rate limit")) {
+    if ((error as any).status === 429 || errMsg.includes("rate limit") || errMsg.includes("too many requests")) {
       throw new Error("Terlalu banyak percobaan. Harap tunggu beberapa menit sebelum membuat akun baru.");
     }
     throw error;
   }
-  if (!data.user) throw new Error("Gagal membuat akun");
+  
+  if (data?.error) {
+    const errMsg = String(data.error).toLowerCase();
+    if (errMsg.includes("rate limit") || errMsg.includes("too many requests")) {
+      throw new Error("Terlalu banyak percobaan. Harap tunggu beberapa menit sebelum membuat akun baru.");
+    }
+    throw new Error(String(data.error));
+  }
+
+  if (!data?.user) throw new Error("Gagal membuat akun");
   return data.user;
 }
 
