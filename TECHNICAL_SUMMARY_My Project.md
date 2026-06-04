@@ -522,6 +522,12 @@ RLS `WITH CHECK` tidak bisa pakai `NEW.role`. **Fix:** Ganti dengan `role` langs
 ### Session Hijacking on Internal User Creation
 **Bugfix:** Resolved session-hijacking on internal user creation by migrating from client-side `auth.signUp` to a dedicated `create-internal-user` Edge Function using the Supabase Admin Auth API.
 
+### Vercel 404 on Page Refresh (SPA Routing)
+**Bugfix:** Added `vercel.json` with a catch-all rewrite rule (`"source": "/(.*)"` → `"/index.html"`) so that Vercel serves the React SPA for all paths instead of returning a 404 on direct URL access or page refresh.
+
+### Missing user_roles After Admin API User Creation
+**Bugfix:** Hardened the `create-internal-user` Edge Function to explicitly upsert rows into `public.profiles` and `public.user_roles` (using the Service Role Key to bypass RLS) after `auth.admin.createUser` succeeds. This is intentionally redundant with the `handle_new_user` trigger to guarantee rows exist even under trigger race conditions.
+
 ---
 
 ## 10. Catatan Penting untuk Sesi Berikutnya

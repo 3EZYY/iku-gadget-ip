@@ -60,7 +60,39 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    return new Response(JSON.stringify({ user: data.user }), {
+    const user = data.user;
+
+    // Explicitly insert into profiles and user_roles using the service-role client.
+    // This is intentionally redundant with the handle_new_user trigger —
+    // it guarantees the rows exist even if the trigger fails or races.
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert(
+        [{ id: user.id, full_name: fullName ?? email, email: email, is_approved: true }],
+        { onConflict: "id" }
+      );
+
+    if (profileError) {
+      console.error("[create-internal-user] profiles upsert error:", profileError.message);
+      // Non-fatal — trigger may have already inserted; log and continue
+    }
+
+    const { error: roleError } = await supabase
+      .from("user_roles")
+      .upsert(
+        [{ user_id: user.id, role: role }],
+        { onConflict: "user_id" }
+      );
+
+    if (roleError) {
+      // Role insert failure IS fatal — without a role the user can't log in
+      return new Response(JSON.stringify({ error: `Akun dibuat tapi gagal menetapkan role: ${roleError.message}` }), {
+        status: 500,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ user }), {
       status: 200,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
