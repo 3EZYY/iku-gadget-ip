@@ -20,7 +20,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, Trash2, Crown, Shield, User, Clock, CheckCircle2, Loader2 } from "lucide-react";import { toast } from "sonner";
+import { UserPlus, Trash2, Crown, Shield, User, Clock, CheckCircle2, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────
 interface UserRow {
@@ -334,6 +335,24 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
     },
   });
 
+  const updateRole = useMutation({
+    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase.rpc as any)("update_user_role", {
+        target_user_id: userId,
+        new_role: role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user-list"] });
+      toast.success("Role berhasil diubah");
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Gagal mengubah role");
+    },
+  });
+
   const deleteUser = useMutation({
     mutationFn: async (targetUserId: string) => {
       const { error } = await supabase.rpc("remove_user_role", { _target_user_id: targetUserId });
@@ -418,7 +437,34 @@ export default function UserManagement({ callerRole }: UserManagementProps) {
                       {u.role === "karyawan" && (
                         <CommissionEditor userId={u.user_id} onSaved={refresh} />
                       )}
-                      {roleBadge(u.role)}
+                      {/* Role: interactive dropdown for owner managing non-owner users */}
+                      {callerRole === "owner" && u.role !== "owner" ? (
+                        <Select
+                          value={u.role}
+                          onValueChange={(newRole) =>
+                            updateRole.mutate({ userId: u.user_id, role: newRole })
+                          }
+                          disabled={updateRole.isPending}
+                        >
+                          <SelectTrigger className="h-7 w-[110px] text-xs px-2">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">
+                              <span className="flex items-center gap-1.5">
+                                <Shield className="h-3 w-3" /> Admin
+                              </span>
+                            </SelectItem>
+                            <SelectItem value="karyawan">
+                              <span className="flex items-center gap-1.5">
+                                <User className="h-3 w-3" /> Karyawan
+                              </span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        roleBadge(u.role)
+                      )}
                       {canDelete(u.role) && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

@@ -537,3 +537,14 @@ RLS `WITH CHECK` tidak bisa pakai `NEW.role`. **Fix:** Ganti dengan `role` langs
   supabase functions deploy predict-price --no-verify-jwt
   supabase functions deploy lookup-imei --no-verify-jwt
   ```
+
+---
+
+## Feature: Dynamic Role Management
+
+Implemented dynamic user role management for Owners via a secure Supabase RPC (`update_user_role`) and interactive UI dropdowns.
+
+- **RPC:** `public.update_user_role(target_user_id UUID, new_role TEXT)` — SECURITY DEFINER, only callable by owner. Guards: caller must be owner, cannot change own role, only 'admin'/'karyawan' are valid targets.
+- **Migration:** `supabase/migrations/20260604000003_update_user_role_rpc.sql`
+- **UI:** In `src/components/UserManagement.tsx`, the static role badge for non-owner users is replaced with a shadcn `<Select>` dropdown (admin/karyawan) when the logged-in user is an owner. Owner's own row always shows a static badge.
+- **Mutation:** `useMutation` calls the RPC then invalidates `['user-list']` query on success.
