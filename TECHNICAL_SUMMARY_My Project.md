@@ -516,6 +516,9 @@ RLS `WITH CHECK` tidak bisa pakai `NEW.role`. **Fix:** Ganti dengan `role` langs
 ### 500 Internal Server Error on user signup
 **Bugfix:** Resolved 500 Internal Server Error on user signup by hardening the handle_new_user trigger and fixing frontend metadata payload. Fixed missing DialogDescription warning in UserManagement modal.
 
+### Radix UI Warnings & Rate Limits
+**Bugfix:** Resolved persistent Radix UI Dialog warnings across multiple modals. Added graceful UI error handling for Supabase 429 Rate Limit Exceeded during user creation.
+
 ---
 
 ## 10. Catatan Penting untuk Sesi Berikutnya

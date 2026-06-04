@@ -69,7 +69,13 @@ export async function createUserWithRole(
       },
     },
   });
-  if (error) throw error;
+  if (error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).status === 429 || error.message.toLowerCase().includes("rate limit")) {
+      throw new Error("Terlalu banyak percobaan. Harap tunggu beberapa menit sebelum membuat akun baru.");
+    }
+    throw error;
+  }
   if (!data.user) throw new Error("Gagal membuat akun");
   return data.user;
 }

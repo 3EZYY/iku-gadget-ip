@@ -87,7 +87,7 @@ function CreateUserDialog({ callerRole, onCreated }: { callerRole: "owner" | "ad
         <Button size="sm"><UserPlus className="mr-2 h-4 w-4" />Tambah Akun</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogDescription className="sr-only">Isi formulir untuk membuat akun baru.</DialogDescription>
+        <DialogDescription className="sr-only">Dialog content description.</DialogDescription>
         <DialogHeader>
           <DialogTitle>Buat Akun Baru</DialogTitle>
         </DialogHeader>
@@ -189,6 +189,7 @@ function ApproveUserDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-sm">
+        <DialogDescription className="sr-only">Dialog content description.</DialogDescription>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle2 className="h-5 w-5 text-primary" />
