@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -20,8 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, Trash2, Crown, Shield, User, Clock, CheckCircle2, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { UserPlus, Trash2, Crown, Shield, User, Clock, CheckCircle2, Loader2 } from "lucide-react";import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────
 interface UserRow {
@@ -88,7 +87,10 @@ function CreateUserDialog({ callerRole, onCreated }: { callerRole: "owner" | "ad
         <Button size="sm"><UserPlus className="mr-2 h-4 w-4" />Tambah Akun</Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
-        <DialogHeader><DialogTitle>Buat Akun Baru</DialogTitle></DialogHeader>
+        <DialogDescription className="sr-only">Isi formulir untuk membuat akun baru.</DialogDescription>
+        <DialogHeader>
+          <DialogTitle>Buat Akun Baru</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Nama Lengkap</Label>

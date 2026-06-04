@@ -63,8 +63,8 @@ export async function createUserWithRole(
     password,
     options: {
       data: {
-        full_name: fullName ?? email,
-        role,
+        full_name: fullName,
+        role: role,
         created_by_admin: "true", // trigger reads this → is_approved = true
       },
     },

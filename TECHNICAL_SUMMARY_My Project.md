@@ -513,6 +513,9 @@ Row `user_roles` belum ada. **Fix:** Jalankan seed SQL di Section 8.
 ### `supabase db push` error `missing FROM-clause entry for table "new"`
 RLS `WITH CHECK` tidak bisa pakai `NEW.role`. **Fix:** Ganti dengan `role` langsung (tanpa prefix).
 
+### 500 Internal Server Error on user signup
+**Bugfix:** Resolved 500 Internal Server Error on user signup by hardening the handle_new_user trigger and fixing frontend metadata payload. Fixed missing DialogDescription warning in UserManagement modal.
+
 ---
 
 ## 10. Catatan Penting untuk Sesi Berikutnya
